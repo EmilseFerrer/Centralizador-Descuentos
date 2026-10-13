@@ -116,7 +116,7 @@ el acceso con una cuenta de usuario. OCR no elude bloqueos HTTP de la fuente.
 ## Clasificar y resumir con IA
 
 `GeminiOfferReader` es un adaptador interno de Gemini REST; modelo predeterminado
-`gemini-2.5-flash-lite`, configurable mediante `Ia:Modelo`. Google publica un nivel
+`gemini-3.5-flash-lite`, configurable mediante `Ia:Modelo`. Google publica un nivel
  gratuito limitado para este modelo; la disponibilidad y cuota dependen del proyecto.
 No se configura facturación ni se cambia automáticamente a otro modelo.
 
@@ -150,3 +150,8 @@ Este archivo no es una fuente de ofertas vigentes ni amplía las fuentes del cat
 adaptadores al proceso periódico con recursos promocionales públicos accesibles, identidad
 estable y control de relecturas. No se ha habilitado IA para todas las ofertas existentes;
 una prueba exitosa del adaptador no demuestra aún la automatización completa del MVP.
+
+Las evidencias toleran exclusivamente diferencias de espacios y saltos de línea de OCR.
+Las palabras, cifras y puntuación deben coincidir. El error identifica el campo rechazado.
+El modelo por defecto se actualizó a 3.5 Flash-Lite porque Google limita modelos 2.5
+a proyectos que ya los usaban. `Ia:Modelo` en user-secrets sigue teniendo prioridad.

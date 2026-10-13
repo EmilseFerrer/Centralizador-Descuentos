@@ -34,7 +34,7 @@ public sealed record LecturaIa(PublicacionIa Publicacion, string TextoOriginal, 
 
 public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
 {
-    public const string ModeloPredeterminado = "gemini-2.5-flash-lite";
+    public const string ModeloPredeterminado = "gemini-3.5-flash-lite";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     { UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow };
     private const string Instrucciones = """
@@ -47,7 +47,10 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         Devuelve null para datos desconocidos. Nombre legible, resumen breve en español y condiciones
         con todos los requisitos publicados. Los topes de reintegro NO son monto de descuento ni precio.
         Beneficios: PrecioFinal, Porcentaje, MontoDescuento, ProductoGratis, Cupon, PromocionBancaria, Otro.
-        Cada beneficio necesita evidencia literal copiada del texto, incluyendo producto y valor si existe.
+        Cada beneficio necesita evidencia copiada de UN fragmento contiguo del texto, incluyendo producto
+        y valor si existe. No corrijas palabras, acentos ni puntuación de las evidencias; no añadas
+        puntos suspensivos ni unas fragmentos separados. Solo se pueden normalizar espacios y saltos
+        de línea. El resumen y las condiciones sí pueden redactarse; sus evidencias no.
         No dupliques el mismo beneficio como Porcentaje y PromocionBancaria. Moneda ARS solo si explícita
         o importe con $ en esta publicación argentina. Valor null para cupón, producto gratis u otro.
         PromocionBancaria: valor es porcentaje explícito, nunca un tope de reintegro.
@@ -118,9 +121,9 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         if (string.IsNullOrWhiteSpace(p.Nombre) || p.Nombre.Length > 300 || string.IsNullOrWhiteSpace(p.Resumen)
             || p.Resumen.Length > 1200 || p.Beneficios.Count == 0 || p.Condiciones?.Length > 20_000)
             throw new InvalidDataException("IA: ficha incompleta o demasiado extensa.");
-        if (p.Condiciones is not null) Evidencia(p.EvidenciaCondiciones, original);
-        if (p.RequiereApp is not null) Evidencia(p.EvidenciaApp, original);
-        if (p.RequiereSesion is not null) Evidencia(p.EvidenciaSesion, original);
+        if (p.Condiciones is not null) Evidencia(p.EvidenciaCondiciones, original, "condiciones");
+        if (p.RequiereApp is not null) Evidencia(p.EvidenciaApp, original, "requisito de app");
+        if (p.RequiereSesion is not null) Evidencia(p.EvidenciaSesion, original, "requisito de sesión");
         var desde = Fecha(p.Desde, original); var hasta = Fecha(p.Hasta, original);
         if (desde is not null && hasta is not null && desde > hasta) throw new InvalidDataException("IA: vigencia invertida.");
         foreach (var b in p.Beneficios)
@@ -128,7 +131,7 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
             if (!Enum.TryParse<TipoBeneficio>(b.Tipo, out var tipo) || !Enum.IsDefined(tipo) || !Enum.GetNames<TipoBeneficio>().Contains(b.Tipo)
                 || string.IsNullOrWhiteSpace(b.Descripcion) || b.Descripcion.Length > 2000
                 || b.Valor < 0 || b.Moneda is not null and not "ARS") throw new InvalidDataException("IA: beneficio inválido.");
-            Evidencia(b.Evidencia, original);
+            Evidencia(b.Evidencia, original, "beneficio");
             if (tipo is TipoBeneficio.ProductoGratis or TipoBeneficio.Cupon or TipoBeneficio.Otro && (b.Valor is not null || b.Moneda is not null))
                 throw new InvalidDataException("IA: valor numérico no aplicable.");
             if (tipo is TipoBeneficio.Porcentaje or TipoBeneficio.PromocionBancaria)
@@ -148,11 +151,14 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         }
         return p;
     }
-    private static void Evidencia(string? cita, string original)
+    private static void Evidencia(string? cita, string original, string campo)
     {
-        if (string.IsNullOrWhiteSpace(cita) || !original.Contains(cita, StringComparison.Ordinal))
-            throw new InvalidDataException("IA: evidencia ausente o no presente literalmente en el texto.");
+        if (string.IsNullOrWhiteSpace(cita) || !NormalizarEspacios(original).Contains(NormalizarEspacios(cita), StringComparison.Ordinal))
+            throw new InvalidDataException($"IA: evidencia de {campo} ausente o no respaldada por el texto OCR (incluso normalizando espacios). No publicar esta interpretación.");
     }
+    // Solo espacios: no quitar negaciones, acentos, signos ni cambiar cifras.
+    private static string NormalizarEspacios(string text) => Regex.Replace(text, @"\s+", " ").Trim();
+
     private static DateOnly? Fecha(string? value, string original)
     {
         if (value is null) return null;

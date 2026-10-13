@@ -16,6 +16,14 @@ foreach (var bad in new[] { result.Replace("\"valor\":30", "\"valor\":50"), resu
     try { GeminiOfferReader.Validar(bad, original); throw new Exception("Debía rechazar una interpretación sin respaldo"); }
     catch (InvalidDataException) { }
 }
+// Un salto de línea introducido por OCR no cambia la evidencia del beneficio.
+var multilinea = original.Replace("Mega Cuarto Deluxe.", "Mega Cuarto\r\nDeluxe.").Replace("únicamente para", "únicamente\tpara");
+Check(GeminiOfferReader.Validar(result, multilinea).Beneficios.Single().Valor == 30, "Tolerar solo espacios y saltos OCR");
+foreach (var alterado in new[] { original.Replace("30%", "20%"), original.Replace("Válido únicamente", "Válido no únicamente"), original.Replace("Deluxe.", "Deluxe!") })
+{
+    try { GeminiOfferReader.Validar(result, alterado); throw new Exception("Debía rechazar evidencia alterada"); }
+    catch (InvalidDataException) { }
+}
 var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["Ia:ApiKey"] = "prueba" }).Build();
 var handler = new Fake(result);
 await new GeminiOfferReader(new HttpClient(handler), config).LeerAsync(original);
