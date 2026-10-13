@@ -3,13 +3,15 @@ import { listarOfertas, consultarOferta } from './features/ofertas/api/ofertasAp
 
 export default function App() {
   const [id, setId] = useState(null);
-  const [data, setData] = useState(null);
+  const [resultado, setResultado] = useState(null);
+  const data = resultado?.id === id ? resultado.value : null;
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
-    setData(null); setError('');
+    setResultado(null); setError('');
     (id === null ? listarOfertas(controller.signal) : consultarOferta(id, controller.signal))
-      .then(setData).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
+      .then(value => { if (!controller.signal.aborted) setResultado({ id, value }); })
+      .catch(e => { if (!controller.signal.aborted) setError(e.message); });
     return () => controller.abort();
   }, [id]);
   return <main>
