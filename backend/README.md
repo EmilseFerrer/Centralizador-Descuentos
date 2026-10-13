@@ -73,3 +73,42 @@ Obtencion:BurgerKing habilita la fuente e intervalo (propuesto: 6 horas); corre 
 No requiere migración adicional. Desde la raíz: `dotnet run --project tests/BurgerKingReader.Checks`. La opción `-- --live` consulta la fuente pública actual desde .NET sin escribir en MySQL; requiere internet. Se probaron porcentajes, precios argentinos, cupones, beneficios sin monto, fecha técnica, exclusión de pruebas/vencidas/delivery y errores de respuesta.
 
 McDonald’s sigue pendiente: durante la inspección su página respondió 403 y no se confirmó un catálogo público legible. No se usan promociones inventadas ni se eluden accesos privados.
+
+## OCR de imágenes y documentos PDF
+
+El adaptador interno `OcrSpaceReader` usa OCR.space mediante POST multipart y la clave
+`Ocr:ApiKey` en un encabezado. Se registra por inyección de dependencias en el backend;
+no requiere paquetes nativos, una instalación de OCR local ni cambios de MySQL.
+Configure la clave desde `backend/src/Cazador.Api`:
+
+```powershell
+dotnet user-secrets set "Ocr:ApiKey" "TU_CLAVE"
+```
+
+Admite PNG/JPEG y PDF de hasta 1 MB; el plan gratuito limita PDF a 3 páginas.
+Conserva el texto por página. Rechaza resultados parciales, errores y documentos sin texto;
+no interpreta su ausencia como ausencia de ofertas. No crea promociones directamente:
+la identificación de beneficios y condiciones corresponde a la etapa de clasificación.
+No envía claves al frontend ni registra respuestas del proveedor en logs.
+
+Validación sin clave, desde la raíz:
+
+```powershell
+dotnet run --project .\tests\Ocr.Checks
+```
+
+Validación real opcional con un archivo público de promoción (PNG/JPEG/PDF), también desde
+la raíz; usa los mismos user-secrets del backend y consume una petición del proveedor:
+
+```powershell
+dotnet run --project .\tests\Ocr.Checks -- --archivo "C:\ruta\promocion.png"
+```
+
+Esto es una herramienta de comprobación para desarrollo, no una carga manual de ofertas.
+**Estado:** adaptador preparado y pruebas simuladas; aún no conectado a las ejecuciones
+periódicas. La fuente seleccionada de Mostaza publica las promociones bancarias en HTML,
+sin imágenes de promociones o PDF en el contenido descargado; Burger King se obtiene de
+texto estructurado. No se procesan logos ni imágenes decorativas. Falta seleccionar un
+recurso promocional público accesible, integrar su descarga automática con límites y
+clasificar el texto antes de persistirlo. McDonald's continúa pendiente: no se automatiza
+el acceso con una cuenta de usuario. OCR no elude bloqueos HTTP de la fuente.
