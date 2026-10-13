@@ -24,6 +24,15 @@ foreach (var alterado in new[] { original.Replace("30%", "20%"), original.Replac
     try { GeminiOfferReader.Validar(result, alterado); throw new Exception("Debía rechazar evidencia alterada"); }
     catch (InvalidDataException) { }
 }
+var oferta = new Cazador.Api.Modules.Obtencion.Readers.OfertaLeida("identidad-fija", "Banco de prueba", original,
+    null, null, new[] { new Cazador.Api.Modules.Obtencion.Readers.BeneficioLeido("30% de ahorro", 30) });
+MostazaIaPolicy.Validar(oferta, parsed);
+foreach (var invalida in new[] { result.Replace("\"requiereRevision\":false", "\"requiereRevision\":true"), result.Replace("\"valor\":30", "\"valor\":20") })
+{
+    var interpretacion = JsonSerializer.Deserialize<PublicacionIa>(invalida, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+    try { MostazaIaPolicy.Validar(oferta, interpretacion); throw new Exception("Debía preservar ficha por interpretación dudosa o porcentaje distinto"); }
+    catch (InvalidDataException) { }
+}
 var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["Ia:ApiKey"] = "prueba" }).Build();
 var handler = new Fake(result);
 await new GeminiOfferReader(new HttpClient(handler), config).LeerAsync(original);

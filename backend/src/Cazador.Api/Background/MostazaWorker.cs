@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using Cazador.Api.Modules.Obtencion.Ia;
 using Cazador.Api.Infrastructure.Persistence;
 using Cazador.Api.Modules.Catalogo.Entities;
 using Cazador.Api.Modules.Obtencion.Readers;
@@ -8,6 +11,10 @@ namespace Cazador.Api.Background;
 public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactory clients,
     IConfiguration config, ILogger<MostazaWorker> logger) : BackgroundService
 {
+    // Máximo 100 interpretaciones en memoria; evita releer con IA texto idéntico
+    // durante esta ejecución del backend. Al reiniciar se vuelve a interpretar.
+    private readonly Dictionary<string, PublicacionIa> interpretaciones = new();
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (!config.GetValue<bool>("Obtencion:Mostaza:Enabled")) return;
@@ -43,7 +50,6 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
         var leidas = MostazaReader.Leer(html);
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var fuente = await db.Fuentes.SingleOrDefaultAsync(x => x.Marca == "Mostaza" && x.Url == MostazaReader.Url, ct);
         if (fuente is null)
         {
@@ -52,8 +58,42 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
         }
         var actuales = fuente.Id == 0 ? new List<Oferta>() : await db.Ofertas.Include(x => x.Beneficios)
             .Where(x => x.FuenteId == fuente.Id).ToListAsync(ct);
-        var ahora = DateTime.UtcNow;
+        var preparadas = new List<(OfertaLeida Oferta, PublicacionIa? Ia)>();
+        var usarIa = config.GetValue<bool>("Obtencion:Mostaza:UseIa");
+        var iaReader = scope.ServiceProvider.GetRequiredService<GeminiOfferReader>();
+        var cuotaAgotada = false;
         foreach (var leida in leidas)
+        {
+            if (!usarIa) { preparadas.Add((leida, null)); continue; }
+            if (cuotaAgotada) continue;
+            var original = leida.Nombre + "\n" + leida.Condiciones;
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+                (config["Ia:Modelo"] ?? GeminiOfferReader.ModeloPredeterminado) + "\n" + original)));
+            try
+            {
+                if (!interpretaciones.TryGetValue(hash, out var interpretacion))
+                {
+                    interpretacion = (await iaReader.LeerAsync(original, ct)).Publicacion;
+                    MostazaIaPolicy.Validar(leida, interpretacion);
+                    if (interpretaciones.Count >= 100) interpretaciones.Clear();
+                    interpretaciones[hash] = interpretacion;
+                }
+                preparadas.Add((leida, interpretacion));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                // No registrar claves, respuestas del proveedor ni información de conexión.
+                logger.LogWarning("Mostaza: no se publicará la interpretación de {Id} ({Tipo}); se conserva la ficha anterior.",
+                    leida.Identificador, ex.GetType().Name);
+                if (ex is HttpRequestException { StatusCode: System.Net.HttpStatusCode.TooManyRequests }
+                    || ex is InvalidOperationException) cuotaAgotada = true;
+            }
+        }
+        // Ninguna transacción de escritura queda abierta durante llamadas a IA.
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var ahora = DateTime.UtcNow;
+        foreach (var (leida, interpretacion) in preparadas)
         {
             var oferta = actuales.SingleOrDefault(x => x.IdentificadorPublicacion == leida.Identificador);
             if (oferta is null)
@@ -62,8 +102,13 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
                 db.Ofertas.Add(oferta);
             }
             oferta.Nombre = leida.Nombre;
-            // Extracto literal: no resume ni interpreta condiciones con IA en esta etapa.
-            oferta.Resumen = string.Join(" ", leida.Beneficios.Select(b => b.Descripcion));
+            // Resumen interpretado; todas las condiciones originales siguen visibles.
+            oferta.Resumen = interpretacion?.Resumen ?? string.Join(" ", leida.Beneficios.Select(b => b.Descripcion));
+            if (interpretacion is not null)
+            {
+                oferta.RequiereApp = interpretacion.RequiereApp;
+                oferta.RequiereSesion = interpretacion.RequiereSesion;
+            }
             oferta.Condiciones = leida.Condiciones;
             oferta.TextoOriginal = leida.Nombre + "\n" + leida.Condiciones;
             oferta.VigenteDesde = leida.Desde; oferta.VigenteHasta = leida.Hasta;
@@ -71,7 +116,7 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
             oferta.EsPaginaGeneral = true;
             oferta.UltimaLecturaUtc = ahora;
             oferta.EnlaceDisponible = true; oferta.UltimaComprobacionUtc = ahora;
-            // Una página pública no demuestra los requisitos de canje: se mantienen desconocidos.
+            // Solo se asignan requisitos con evidencia específica en la publicación.
             db.Beneficios.RemoveRange(oferta.Beneficios);
             oferta.Beneficios.Clear();
             foreach (var beneficio in leida.Beneficios)
@@ -81,6 +126,6 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
         // Ausencia en la respuesta no equivale a vencimiento. Las fechas conocidas se filtran en el catálogo.
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
-        logger.LogInformation("Mostaza: {Cantidad} publicaciones leídas y actualizadas a las {FechaUtc} UTC.", leidas.Count, ahora);
+        logger.LogInformation("Mostaza: {Cantidad} publicaciones actualizadas (IA: {UsarIa}) a las {FechaUtc} UTC.", preparadas.Count, usarIa, ahora);
     }
 }

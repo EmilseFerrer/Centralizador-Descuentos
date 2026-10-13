@@ -148,10 +148,39 @@ no inferir que requiere sesión por el encabezado de la página y no inventar vi
 Este archivo no es una fuente de ofertas vigentes ni amplía las fuentes del catálogo.
 **Pendiente:** validar la respuesta real con la clave del desarrollador y conectar estos
 adaptadores al proceso periódico con recursos promocionales públicos accesibles, identidad
-estable y control de relecturas. No se ha habilitado IA para todas las ofertas existentes;
-una prueba exitosa del adaptador no demuestra aún la automatización completa del MVP.
+estable y control de relecturas. La IA ya está integrada en la actualización de Mostaza; Burger King conserva su lector
+estructurado. Una prueba exitosa del adaptador no demuestra aún el MVP completo.
 
 Las evidencias toleran exclusivamente diferencias de espacios y saltos de línea de OCR.
 Las palabras, cifras y puntuación deben coincidir. El error identifica el campo rechazado.
 El modelo por defecto se actualizó a 3.5 Flash-Lite porque Google limita modelos 2.5
 a proyectos que ya los usaban. `Ia:Modelo` en user-secrets sigue teniendo prioridad.
+
+## Actualización periódica de Mostaza con IA
+
+`Obtencion:Mostaza:UseIa=true` habilita la interpretación automática al iniciar y cada seis
+horas mientras el backend esté activo. Se usan los mismos user-secrets `Ia:ApiKey` y
+`Ia:Modelo` que en la prueba real. No necesita una migración nueva.
+
+El lector divide la página seleccionada en publicaciones bancarias y mantiene su identidad
+original. Gemini procesa cada publicación por separado. Solo se actualizan interpretaciones
+completas, sin marca de revisión y con porcentajes y fechas conocidas consistentes con el
+lector. El resumen se guarda en la ficha, los requisitos respaldados se registran y las
+condiciones originales completas permanecen visibles junto con el texto original.
+No se aceptan beneficios nuevos introducidos por IA en esta fuente bancaria.
+
+Si falla la IA, falta la clave o se agota la cuota, las fichas afectadas conservan sus datos
+y fecha de lectura anteriores; una publicación nueva no se agrega hasta completar la
+interpretación. Las demás publicaciones válidas pueden actualizarse. Las transacciones
+se abren después de las llamadas externas. No se borra una oferta por su ausencia.
+
+Una caché limitada a 100 interpretaciones evita volver a llamar a IA para texto y modelo
+idénticos dentro de una ejecución del backend; al reiniciar se vuelve a interpretar.
+Esta caché no es persistente y un cambio de condiciones requiere una llamada nueva.
+El log `Mostaza: ... publicaciones actualizadas (IA: True)` permite verificar la ejecución.
+Si se desactiva `UseIa`, se vuelve al extracto literal del lector para desarrollo.
+
+OCR continúa preparado y probado, pero aún no participa en la actualización periódica:
+la fuente seleccionada de Mostaza es texto HTML. La muestra antigua de OCR no se incorpora
+al catálogo. Falta un recurso promocional público accesible dentro de las fuentes
+seleccionadas para integrar su descarga y extracción automática con identidad propia.
