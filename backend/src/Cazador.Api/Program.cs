@@ -38,6 +38,10 @@ builder.Services.AddHttpClient<Cazador.Api.Modules.Obtencion.Ocr.OcrSpaceReader>
 {
     client.Timeout = TimeSpan.FromSeconds(90);
 }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient<Cazador.Api.Modules.Obtencion.Ia.GeminiOfferReader>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(90);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors("Frontend");

@@ -112,3 +112,41 @@ texto estructurado. No se procesan logos ni imágenes decorativas. Falta selecci
 recurso promocional público accesible, integrar su descarga automática con límites y
 clasificar el texto antes de persistirlo. McDonald's continúa pendiente: no se automatiza
 el acceso con una cuenta de usuario. OCR no elude bloqueos HTTP de la fuente.
+
+## Clasificar y resumir con IA
+
+`GeminiOfferReader` es un adaptador interno de Gemini REST; modelo predeterminado
+`gemini-2.5-flash-lite`, configurable mediante `Ia:Modelo`. Google publica un nivel
+ gratuito limitado para este modelo; la disponibilidad y cuota dependen del proyecto.
+No se configura facturación ni se cambia automáticamente a otro modelo.
+
+Guarde `Ia:ApiKey` con user-secrets desde `backend/src/Cazador.Api` (o variable
+`Ia__ApiKey` en el entorno). La clave se envía como encabezado y no se expone a React.
+El adaptador solicita JSON con esquema, clasifica una publicación, propone resumen,
+condiciones y beneficios de los tipos del MVP, conservando el texto recibido.
+Los campos desconocidos son null. Los beneficios y requisitos necesitan evidencia
+literal. Se comprueban importes/porcentajes y fechas completas; un resultado JSON válido
+no garantiza que la interpretación sea correcta. Se conservan condiciones originales
+para revisar omisiones y errores de OCR. `requiereRevision=true` indica salida dudosa.
+No se acepta respuesta truncada, bloqueo ni cuota agotada como lectura exitosa.
+
+Prueba simulada desde la raíz (no usa claves ni red):
+
+```powershell
+dotnet run --project .\tests\Ia.Checks
+```
+
+Prueba real OCR → IA con el archivo temporal usado antes:
+
+```powershell
+dotnet run --project .\tests\Ia.Checks -- --imagen "$env:TEMP\promocion-mostaza.jpg"
+```
+
+Consume una solicitud de OCR y una de Gemini, imprime la propuesta y no persiste ofertas.
+En la muestra antigua se espera el beneficio principal de 30%, no el 15% de otros cupones;
+no inferir que requiere sesión por el encabezado de la página y no inventar vigencia.
+Este archivo no es una fuente de ofertas vigentes ni amplía las fuentes del catálogo.
+**Pendiente:** validar la respuesta real con la clave del desarrollador y conectar estos
+adaptadores al proceso periódico con recursos promocionales públicos accesibles, identidad
+estable y control de relecturas. No se ha habilitado IA para todas las ofertas existentes;
+una prueba exitosa del adaptador no demuestra aún la automatización completa del MVP.
