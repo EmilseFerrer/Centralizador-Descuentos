@@ -18,6 +18,11 @@ builder.Services.AddHttpClient("Mostaza", client =>
     client.Timeout = TimeSpan.FromSeconds(45);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
 });
+builder.Services.AddHttpClient("Enlaces", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddHostedService<Cazador.Api.Background.MostazaWorker>();
 var app = builder.Build();
 app.UseExceptionHandler();

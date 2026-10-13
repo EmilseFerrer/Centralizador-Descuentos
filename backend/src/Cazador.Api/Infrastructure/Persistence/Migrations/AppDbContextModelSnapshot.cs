@@ -149,6 +149,62 @@ namespace Cazador.Api.Infrastructure.Persistence.Migrations
                     b.ToTable("Ofertas");
                 });
 
+            modelBuilder.Entity("Cazador.Api.Modules.Participacion.Entities.Apertura", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ConfirmacionUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool?>("Encontrada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("OfertaId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UrlDestino")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfertaId");
+
+                    b.ToTable("Aperturas");
+                });
+
+            modelBuilder.Entity("Cazador.Api.Modules.Participacion.Entities.ReporteOferta", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<long>("OfertaId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfertaId");
+
+                    b.ToTable("Reportes");
+                });
+
             modelBuilder.Entity("Cazador.Api.Modules.Catalogo.Entities.Beneficio", b =>
                 {
                     b.HasOne("Cazador.Api.Modules.Catalogo.Entities.Oferta", "Oferta")
@@ -169,6 +225,28 @@ namespace Cazador.Api.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Fuente");
+                });
+
+            modelBuilder.Entity("Cazador.Api.Modules.Participacion.Entities.Apertura", b =>
+                {
+                    b.HasOne("Cazador.Api.Modules.Catalogo.Entities.Oferta", "Oferta")
+                        .WithMany()
+                        .HasForeignKey("OfertaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Oferta");
+                });
+
+            modelBuilder.Entity("Cazador.Api.Modules.Participacion.Entities.ReporteOferta", b =>
+                {
+                    b.HasOne("Cazador.Api.Modules.Catalogo.Entities.Oferta", "Oferta")
+                        .WithMany()
+                        .HasForeignKey("OfertaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Oferta");
                 });
 
             modelBuilder.Entity("Cazador.Api.Modules.Catalogo.Entities.Fuente", b =>

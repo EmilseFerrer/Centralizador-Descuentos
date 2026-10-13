@@ -13,4 +13,4 @@ React con JavaScript y Vite. Backend: backend/ de este repositorio (C# y MySQL).
 `npm run build` genera la aplicación en dist.
 
 ## Alcance de esta etapa
-Listado y ficha con carga, vacío y error. No se muestran promociones ficticias. Si el catálogo está vacío, no hay ofertas disponibles. La base del backend debe configurarse siguiendo su README. Apertura con registro, reportes y confirmación se implementarán en la próxima etapa. No hay claves de IA ni acceso directo a MySQL en el frontend.
+Listado y ficha con carga, vacío y error. No se muestran promociones ficticias. Si el catálogo está vacío, no hay ofertas disponibles. La base del backend debe configurarse siguiendo su README. Apertura con registro, reportes y confirmación implementados; requieren la migración Participacion del backend. No hay claves de IA ni acceso directo a MySQL en el frontend.

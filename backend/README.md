@@ -25,7 +25,7 @@ La conexión también se puede configurar mediante `ConnectionStrings__MySql`. N
 Las fechas límite se interpretan con el día de Argentina. Los registros de lectura se guardarán en UTC.
 
 ## Alcance de esta etapa
-Modelo Fuente/Oferta/Beneficio, persistencia y consulta. No hay ofertas precargadas ni carga manual pública. Obtención automática implementada para los bloques bancarios HTML de Mostaza descritos abajo. OCR, documentos, IA, comprobación completa de enlaces y participación todavía NO están implementados. Carpetas reservadas para próximas etapas; no hay procesos simulados. Faltan confirmar URLs, intervalos y proveedores. Las identidades por publicación deben distinguir varias promociones de una misma página.
+Modelo Fuente/Oferta/Beneficio, persistencia y consulta. No hay ofertas precargadas ni carga manual pública. Obtención automática implementada para los bloques bancarios HTML de Mostaza descritos abajo. OCR, documentos e IA todavía NO están implementados. Participación y comprobación HTTP de enlaces implementadas como se describe abajo. Carpetas reservadas para próximas etapas; no hay procesos simulados. Faltan confirmar URLs, intervalos y proveedores. Las identidades por publicación deben distinguir varias promociones de una misma página.
 
 ## Primera obtención automática: Mostaza
 Fuente seleccionada: https://www.mostazaweb.com.ar/bases-y-condiciones-promos/. Se leen los bloques bancarios en HTML, conservando todas sus condiciones y sus variantes porcentuales. No se importan concursos ni la página de cupón que actualmente muestra un error. Fechas sin informar permanecen desconocidas; no se confunde el tope de reintegro con un precio o un descuento fijo.
@@ -43,3 +43,22 @@ dotnet run --no-launch-profile --urls http://localhost:5080
 La consola debe registrar el número de publicaciones actualizadas. Consultar /api/ofertas después de finalizar la lectura.
 
 Validar el lector desde la raíz: `dotnet run --project tests/MostazaReader.Checks`. Comprueba segmentación, variantes, fechas, identidad y rechazo de contenido inválido sin conectarse a MySQL.
+
+## Aperturas, reportes y confirmación (HU08–HU10)
+- POST `/api/ofertas/{id}/aperturas`: comprueba por HTTP el destino oficial HTTPS, registra la solicitud de apertura y devuelve identificador y URL. No acredita que el navegador haya cargado la oferta o que se haya canjeado. Se permiten hasta cinco redirecciones entre dominios oficiales admitidos. Los errores de red se informan y no se crea una apertura. Un 401/403 no se interpreta automáticamente como requisito de sesión. La comprobación HTTP acredita accesibilidad, no presencia ni vigencia de una promoción dentro de una página general.
+- POST `/api/ofertas/{id}/reportes`: recibe motivo `vencida` o `datos_incorrectos`, guarda el reporte sin alterar la oferta y confirma recepción.
+- PUT `/api/aperturas/{id}/confirmacion`: recibe `encontrada` booleano obligatorio. Ausencia de respuesta se mantiene nula. Repetir la misma respuesta no agrega registros ni cambia su fecha.
+
+React muestra los avisos conocidos, abre una nueva pestaña y presenta la pregunta de hallazgo en la ficha después de la solicitud de apertura. Si el navegador bloquea la pestaña hay un enlace para continuar. La respuesta queda vinculada a esa apertura. No requiere cuentas de usuario ni recoge datos personales. No se incluye una pantalla de gestión de reportes.
+
+Antes de iniciar esta versión, aplicar la migración `Participacion` desde la carpeta del backend, después de detener el proceso:
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:DOTNET_ENVIRONMENT = "Development"
+$env:DOTNET_ROLL_FORWARD = "Major"
+.\.ef-tools\dotnet-ef.exe database update
+dotnet run
+```
+La herramienta local EF9 se instaló anteriormente; si no existe, usar `dotnet tool install dotnet-ef --version 9.0.0 --tool-path ./.ef-tools`. No borrar ni recrear la base.
+
+Desde la raíz, `dotnet run --project tests/Participacion.Checks` prueba persistencia en SQLite temporal y validación de entradas, apertura de oferta vencida, destino caído, fallo de red, reporte sin retiro y confirmación idempotente. No reemplaza la validación de la migración en MySQL Aiven.

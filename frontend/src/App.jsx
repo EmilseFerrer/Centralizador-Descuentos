@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import OfertaDetalle from './features/ofertas/components/OfertaDetalle.jsx';
 import { listarOfertas, consultarOferta } from './features/ofertas/api/ofertasApi.js';
 
 export default function App() {
@@ -19,12 +20,6 @@ export default function App() {
     {id !== null && <button onClick={() => setId(null)}>Volver al listado</button>}
     {error ? <p role="alert">{error} Verificá que el backend y MySQL estén disponibles.</p> : data === null ? <p role="status">Cargando ofertas…</p> : id === null ?
       data.length === 0 ? <p>No hay ofertas disponibles.</p> : <section className="grid" aria-label="Ofertas">{data.map(o => <article key={o.id}><p>{o.marca}</p><h2>{o.nombre}</h2><p>{o.resumen}</p><button onClick={() => setId(o.id)}>Ver detalle</button></article>)}</section> :
-      <article><p>{data.marca}</p><h2>{data.nombre}</h2><p>{data.resumen}</p>
-        <h3>Beneficios</h3>{data.beneficios.length ? <ul>{data.beneficios.map((b, i) => <li key={i}>{b.descripcion}</li>)}</ul> : <p>No informados.</p>}
-        <h3>Condiciones</h3><p>{data.condiciones || 'No informadas por la fuente.'}</p>
-        <p>Vigencia hasta: {data.vigenteHasta || 'No informada'}</p>
-        <p>Fuente: {data.fuente}</p>
-        <p>Última lectura: {new Date(data.ultimaLecturaUtc + (data.ultimaLecturaUtc.endsWith('Z') ? '' : 'Z')).toLocaleString('es-AR')}</p>
-      </article>}
+      <OfertaDetalle key={data.id} oferta={data} />}
   </main>;
 }
