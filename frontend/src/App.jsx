@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { listarOfertas, consultarOferta } from './features/ofertas/api/ofertasApi.js';
 
 export default function App() {
