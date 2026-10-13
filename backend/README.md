@@ -25,4 +25,21 @@ La conexión también se puede configurar mediante `ConnectionStrings__MySql`. N
 Las fechas límite se interpretan con el día de Argentina. Los registros de lectura se guardarán en UTC.
 
 ## Alcance de esta etapa
-Modelo Fuente/Oferta/Beneficio, persistencia y consulta. No hay ofertas precargadas ni carga manual pública. Obtención automática, OCR, documentos, IA, comprobación de enlaces y participación todavía NO están implementados. Carpetas reservadas para próximas etapas; no hay procesos simulados. Faltan confirmar URLs, intervalos y proveedores. Las identidades por publicación deben distinguir varias promociones de una misma página.
+Modelo Fuente/Oferta/Beneficio, persistencia y consulta. No hay ofertas precargadas ni carga manual pública. Obtención automática implementada para los bloques bancarios HTML de Mostaza descritos abajo. OCR, documentos, IA, comprobación completa de enlaces y participación todavía NO están implementados. Carpetas reservadas para próximas etapas; no hay procesos simulados. Faltan confirmar URLs, intervalos y proveedores. Las identidades por publicación deben distinguir varias promociones de una misma página.
+
+## Primera obtención automática: Mostaza
+Fuente seleccionada: https://www.mostazaweb.com.ar/bases-y-condiciones-promos/. Se leen los bloques bancarios en HTML, conservando todas sus condiciones y sus variantes porcentuales. No se importan concursos ni la página de cupón que actualmente muestra un error. Fechas sin informar permanecen desconocidas; no se confunde el tope de reintegro con un precio o un descuento fijo.
+
+El proceso se ejecuta al iniciar el backend y cada 6 horas mientras esté funcionando. Intervalo propuesto y configurable en Obtencion:Mostaza; Enabled permite desactivarlo. No requiere una nueva migración. Ejecutar una sola instancia del backend para esta etapa. Si la lectura o la persistencia falla, se registra el tipo de fallo y se conserva el catálogo anterior. No se retiran ofertas por una mera ausencia en la página; las fechas conocidas vencidas se excluyen de la consulta existente. La identidad depende del encabezado normalizado: un cambio de encabezado puede producir otra publicación y queda pendiente mejorar esa conciliación.
+
+Esta etapa cubre exclusivamente texto bancario de Mostaza: OCR, documentos, IA y demás marcas siguen pendientes. El resumen es un extracto literal, no una interpretación por IA. La fecha de última lectura acredita lectura del contenido, no garantiza el canje.
+
+Para iniciar desde PowerShell con secretos de usuario:
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:DOTNET_ENVIRONMENT = "Development"
+dotnet run --no-launch-profile --urls http://localhost:5080
+```
+La consola debe registrar el número de publicaciones actualizadas. Consultar /api/ofertas después de finalizar la lectura.
+
+Validar el lector desde la raíz: `dotnet run --project tests/MostazaReader.Checks`. Comprueba segmentación, variantes, fechas, identidad y rechazo de contenido inválido sin conectarse a MySQL.

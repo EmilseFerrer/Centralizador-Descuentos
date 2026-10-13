@@ -13,6 +13,12 @@ if (string.IsNullOrWhiteSpace(connection))
 var version = Version.Parse(builder.Configuration["MySql:ServerVersion"] ?? "8.0.0");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connection, new MySqlServerVersion(version)));
+builder.Services.AddHttpClient("Mostaza", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
+});
+builder.Services.AddHostedService<Cazador.Api.Background.MostazaWorker>();
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors("Frontend");

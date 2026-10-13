@@ -1,0 +1,8 @@
+**/.vs/
+**/bin/
+**/obj/
+**/.ef-tools/
+**/node_modules/
+**/dist/
+**/.env
+**/.env.local
