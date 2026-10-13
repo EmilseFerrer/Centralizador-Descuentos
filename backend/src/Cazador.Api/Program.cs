@@ -24,6 +24,16 @@ builder.Services.AddHttpClient("Enlaces", client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
 }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddHostedService<Cazador.Api.Background.MostazaWorker>();
+builder.Services.AddHttpClient("BurgerKing", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
+    client.DefaultRequestHeaders.Add("x-ui-region", "AR");
+    client.DefaultRequestHeaders.Add("x-ui-language", "es");
+    client.DefaultRequestHeaders.Add("x-ui-platform", "web");
+    client.DefaultRequestHeaders.Add("apollo-require-preflight", "true");
+});
+builder.Services.AddHostedService<Cazador.Api.Background.BurgerKingWorker>();
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors("Frontend");
