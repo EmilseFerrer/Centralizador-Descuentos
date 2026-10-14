@@ -79,6 +79,10 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
             // segunda redacción de este campo ni evidencias artificiales para ella.
             schema["properties"]!["condiciones"] = new JsonObject { ["type"] = "null" };
             schema["properties"]!["evidenciaCondiciones"] = new JsonObject { ["type"] = "null" };
+            var beneficio = schema["properties"]!["beneficios"]!["items"]!["properties"]!;
+            beneficio["tipo"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("PromocionBancaria") };
+            beneficio["valor"] = new JsonObject { ["type"] = "number", ["minimum"] = 0, ["maximum"] = 100 };
+            beneficio["moneda"] = new JsonObject { ["type"] = "null" };
         }
         var instrucciones = Instrucciones + (publicacionBancaria ? """
 
@@ -160,7 +164,7 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
             if (tipo is TipoBeneficio.Porcentaje or TipoBeneficio.PromocionBancaria)
             {
                 if (b.Moneda is not null || b.Valor > 100 || tipo == TipoBeneficio.Porcentaje && b.Valor is null)
-                    throw new InvalidDataException("IA: porcentaje inválido.");
+                    throw new InvalidDataException($"IA: porcentaje inválido (valor: {b.Valor}, moneda: {b.Moneda ?? "null"}).");
                 if (b.Valor is not null && !Regex.Matches(b.Evidencia, @"(?<!\d)(\d{1,3}(?:[.,]\d+)?)\s*%")
                     .Any(m => decimal.TryParse(m.Groups[1].Value.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out var n) && n == b.Valor))
                     throw new InvalidDataException("IA: porcentaje sin respaldo literal.");

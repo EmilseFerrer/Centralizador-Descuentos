@@ -191,3 +191,21 @@ Las evidencias de beneficios, porcentajes y requisitos siguen siendo obligatoria
 validan. Dos reintegros explícitos según medio de pago pueden pertenecer a una sola
 publicación (por ejemplo, Cuenta DNI/NFC); se exige conservar ambos porcentajes.
 No se fuerza la aceptación de clasificaciones realmente dudosas.
+
+### Diagnosticar la conexión con Aiven
+
+Desde la raíz, con la misma configuración local del backend:
+
+```powershell
+dotnet run --project .\tests\Conexion.Checks
+```
+
+Abre una conexión nueva sin pool y ejecuta únicamente `SELECT 1`. No modifica datos,
+no llama a IA/OCR y no muestra la cadena ni la contraseña. Si falla, imprime código
+MySQL, SQLSTATE y tipo de causa; para errores de red, también SocketErrorCode.
+Un resultado correcto comprueba acceso en ese momento y no descarta un fallo intermitente.
+
+El esquema de respuesta bancaria restringe los beneficios a PromocionBancaria,
+valor numérico entre 0 y 100 y moneda null. La validación literal y la comparación
+contra los porcentajes de origen siguen siendo obligatorias; un tope en pesos no se
+acepta como porcentaje.

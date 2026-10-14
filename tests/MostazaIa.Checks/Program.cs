@@ -42,6 +42,9 @@ sealed class Handler:HttpMessageHandler{
   using var body = JsonDocument.Parse(await r.Content!.ReadAsStringAsync(ct));
   if (body.RootElement.GetProperty("generationConfig").GetProperty("responseJsonSchema").GetProperty("properties").GetProperty("condiciones").GetProperty("type").GetString() != "null")
     throw new Exception("El contexto bancario debe conservar las condiciones originales");
+  var beneficioSchema = body.RootElement.GetProperty("generationConfig").GetProperty("responseJsonSchema").GetProperty("properties").GetProperty("beneficios").GetProperty("items").GetProperty("properties");
+  if (beneficioSchema.GetProperty("moneda").GetProperty("type").GetString() != "null" || beneficioSchema.GetProperty("valor").GetProperty("maximum").GetInt32() != 100)
+    throw new Exception("Un porcentaje bancario no lleva moneda y no supera 100");
   if(Fail)return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
   var output=new{esOferta=true,requiereRevision=false,nombre="Banco Prueba",resumen="Resumen IA del 30%",condiciones=(string?)null,evidenciaCondiciones=(string?)null,desde=(string?)null,hasta=(string?)null,requiereApp=(bool?)null,evidenciaApp=(string?)null,requiereSesion=(bool?)null,evidenciaSesion=(string?)null,beneficios=new[]{new{tipo="PromocionBancaria",descripcion="30% de ahorro",valor=30,moneda=(string?)null,evidencia="30% de ahorro."}}};
   var payload=new{candidates=new[]{new{finishReason="STOP",content=new{parts=new[]{new{text=JsonSerializer.Serialize(output)}}}}}};
