@@ -209,3 +209,19 @@ El esquema de respuesta bancaria restringe los beneficios a PromocionBancaria,
 valor numérico entre 0 y 100 y moneda null. La validación literal y la comparación
 contra los porcentajes de origen siguen siendo obligatorias; un tope en pesos no se
 acepta como porcentaje.
+
+El backend también registra `Diagnóstico MySQL` cuando EF detecta un fallo de conexión.
+Incluye códigos MySQL/SQLSTATE, tipo de causa, código de socket y estado de cancelación;
+no copia el mensaje de excepción ni datos de acceso. Los mensajes anteriores de EF se
+mantienen. Una cancelación confirmada requiere tanto una excepción de cancelación como
+un token cancelado; no se clasifica automáticamente un timeout como una cancelación.
+
+Prueba sin base de datos:
+
+```powershell
+dotnet run --project .\tests\Conexion.Checks -- --simulada
+```
+
+Este registro sirve para identificar los fallos intermitentes observados. No modifica
+credenciales, límites del pool, transacciones ni configura reintentos de escrituras.
+La causa de los fallos reales sigue pendiente de comprobar con el entorno del desarrollador.

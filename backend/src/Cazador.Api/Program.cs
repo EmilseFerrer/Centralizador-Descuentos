@@ -11,8 +11,10 @@ var connection = builder.Configuration.GetConnectionString("MySql");
 if (string.IsNullOrWhiteSpace(connection))
     throw new InvalidOperationException("Configure ConnectionStrings:MySql mediante user-secrets o variables de entorno. Consulte README.md.");
 var version = Version.Parse(builder.Configuration["MySql:ServerVersion"] ?? "8.0.0");
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connection, new MySqlServerVersion(version)));
+builder.Services.AddSingleton<ConnectionDiagnostics>();
+builder.Services.AddDbContext<AppDbContext>((services, options) =>
+    options.UseMySql(connection, new MySqlServerVersion(version))
+        .AddInterceptors(services.GetRequiredService<ConnectionDiagnostics>()));
 builder.Services.AddHttpClient("Mostaza", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(45);
