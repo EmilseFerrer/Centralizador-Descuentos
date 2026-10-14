@@ -73,7 +73,7 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
             {
                 if (!interpretaciones.TryGetValue(hash, out var interpretacion))
                 {
-                    interpretacion = (await iaReader.LeerAsync(original, ct)).Publicacion;
+                    interpretacion = (await iaReader.LeerAsync(original, ct, publicacionBancaria: true)).Publicacion;
                     MostazaIaPolicy.Validar(leida, interpretacion);
                     if (interpretaciones.Count >= 100) interpretaciones.Clear();
                     interpretaciones[hash] = interpretacion;

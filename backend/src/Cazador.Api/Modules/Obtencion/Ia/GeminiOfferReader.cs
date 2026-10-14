@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Cazador.Api.Modules.Catalogo.Entities;
 
@@ -63,7 +64,7 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         La salida es una propuesta de interpretación, no confirmación de vigencia ni publicación automática.
         """;
 
-    public async Task<LecturaIa> LeerAsync(string texto, CancellationToken ct = default)
+    public async Task<LecturaIa> LeerAsync(string texto, CancellationToken ct = default, bool publicacionBancaria = false)
     {
         if (string.IsNullOrWhiteSpace(texto) || texto.Length > 60_000)
             throw new InvalidDataException("IA: texto vacío o mayor al límite permitido.");
@@ -71,13 +72,32 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         if (string.IsNullOrWhiteSpace(key)) throw new InvalidOperationException("Configure Ia:ApiKey mediante user-secrets.");
         var model = config["Ia:Modelo"] ?? ModeloPredeterminado;
         if (!Regex.IsMatch(model, "^gemini-[a-z0-9.-]+$")) throw new InvalidOperationException("IA: nombre de modelo inválido.");
-        using var schema = JsonDocument.Parse(Esquema);
+        var schema = JsonNode.Parse(Esquema)!;
+        if (publicacionBancaria)
+        {
+            // El worker conserva las condiciones originales completas; no necesita una
+            // segunda redacción de este campo ni evidencias artificiales para ella.
+            schema["properties"]!["condiciones"] = new JsonObject { ["type"] = "null" };
+            schema["properties"]!["evidenciaCondiciones"] = new JsonObject { ["type"] = "null" };
+        }
+        var instrucciones = Instrucciones + (publicacionBancaria ? """
+
+            CONTEXTO DE PUBLICACIÓN BANCARIA: el lector separó una única publicación de un banco.
+            Puede contener varias variantes explícitas de reintegro según el medio de pago; no son
+            promociones ajenas ni ruido de navegación. Incluye cada variante con su propia evidencia
+            y porcentaje, sin mezclarlas ni marcar revisión solo por tener dos porcentajes. Si sus
+            condiciones son realmente ambiguas, mantén requiereRevision=true.
+            En este modo condiciones y evidenciaCondiciones deben ser null: el sistema mostrará las
+            condiciones originales completas. El resumen debe interpretar brevemente los medios de pago,
+            días y topes pertinentes, diferenciando las variantes. No inventes datos. Usa
+            PromocionBancaria para reintegros; los topes no son porcentajes ni descuentos fijos.
+            """ : "");
         var payload = new
         {
-            systemInstruction = new { parts = new[] { new { text = Instrucciones } } },
+            systemInstruction = new { parts = new[] { new { text = instrucciones } } },
             contents = new[] { new { role = "user", parts = new[] { new { text = texto } } } },
             generationConfig = new { temperature = 0, maxOutputTokens = 4096,
-                responseMimeType = "application/json", responseJsonSchema = schema.RootElement }
+                responseMimeType = "application/json", responseJsonSchema = schema }
         };
         using var request = new HttpRequestMessage(HttpMethod.Post,
             $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent")
@@ -104,7 +124,10 @@ public sealed class GeminiOfferReader(HttpClient client, IConfiguration config)
         var parts = candidate.GetProperty("content").GetProperty("parts");
         var json = string.Concat(parts.EnumerateArray().Where(p => !p.TryGetProperty("thought", out var t) || t.ValueKind != JsonValueKind.True)
             .Where(p => p.TryGetProperty("text", out _)).Select(p => p.GetProperty("text").GetString()));
-        return new LecturaIa(Validar(json, texto), texto, model);
+        var interpretacion = Validar(json, texto);
+        if (publicacionBancaria && (interpretacion.Condiciones is not null || interpretacion.EvidenciaCondiciones is not null))
+            throw new InvalidDataException("IA: la respuesta bancaria contradice el formato solicitado.");
+        return new LecturaIa(interpretacion, texto, model);
     }
 
     public static PublicacionIa Validar(string json, string original)

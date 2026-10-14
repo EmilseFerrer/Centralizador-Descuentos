@@ -184,3 +184,10 @@ OCR continúa preparado y probado, pero aún no participa en la actualización p
 la fuente seleccionada de Mostaza es texto HTML. La muestra antigua de OCR no se incorpora
 al catálogo. Falta un recurso promocional público accesible dentro de las fuentes
 seleccionadas para integrar su descarga y extracción automática con identidad propia.
+
+En el contexto bancario, la IA resume y clasifica las variantes de una publicación; no
+redacta un segundo campo de condiciones. Ese campo mantiene íntegro el texto de origen.
+Las evidencias de beneficios, porcentajes y requisitos siguen siendo obligatorias y se
+validan. Dos reintegros explícitos según medio de pago pueden pertenecer a una sola
+publicación (por ejemplo, Cuenta DNI/NFC); se exige conservar ambos porcentajes.
+No se fuerza la aceptación de clasificaciones realmente dudosas.

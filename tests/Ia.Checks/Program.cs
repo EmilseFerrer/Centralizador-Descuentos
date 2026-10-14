@@ -33,6 +33,21 @@ foreach (var invalida in new[] { result.Replace("\"requiereRevision\":false", "\
     try { MostazaIaPolicy.Validar(oferta, interpretacion); throw new Exception("Debía preservar ficha por interpretación dudosa o porcentaje distinto"); }
     catch (InvalidDataException) { }
 }
+// Dos variantes explícitas dentro de una misma publicación bancaria.
+var variantes = new Cazador.Api.Modules.Obtencion.Readers.OfertaLeida("provincia", "Banco Provincia",
+    "25% de reintegro pagando con dinero en Cuenta DNI.\n30% de reintegro pagando mediante NFC.",
+    null, null, new[] { new Cazador.Api.Modules.Obtencion.Readers.BeneficioLeido("Cuenta DNI", 25),
+        new Cazador.Api.Modules.Obtencion.Readers.BeneficioLeido("NFC", 30) });
+var nodo = System.Text.Json.Nodes.JsonNode.Parse(result)!;
+nodo["condiciones"] = null; nodo["evidenciaCondiciones"] = null;
+nodo["beneficios"] = new System.Text.Json.Nodes.JsonArray(
+    new System.Text.Json.Nodes.JsonObject { ["tipo"]="PromocionBancaria", ["descripcion"]="25% con Cuenta DNI", ["valor"]=25, ["moneda"]=null, ["evidencia"]="25% de reintegro pagando con dinero en Cuenta DNI." },
+    new System.Text.Json.Nodes.JsonObject { ["tipo"]="PromocionBancaria", ["descripcion"]="30% con NFC", ["valor"]=30, ["moneda"]=null, ["evidencia"]="30% de reintegro pagando mediante NFC." });
+var ambas = GeminiOfferReader.Validar(nodo.ToJsonString(), variantes.Condiciones);
+MostazaIaPolicy.Validar(variantes, ambas);
+ambas.Beneficios.RemoveAt(0);
+try { MostazaIaPolicy.Validar(variantes, ambas); throw new Exception("Debía rechazar la pérdida de una variante"); }
+catch (InvalidDataException) { }
 var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["Ia:ApiKey"] = "prueba" }).Build();
 var handler = new Fake(result);
 await new GeminiOfferReader(new HttpClient(handler), config).LeerAsync(original);
