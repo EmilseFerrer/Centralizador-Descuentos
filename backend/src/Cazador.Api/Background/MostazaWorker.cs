@@ -84,8 +84,13 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
             catch (Exception ex)
             {
                 // No registrar claves, respuestas del proveedor ni información de conexión.
-                logger.LogWarning("Mostaza: no se publicará la interpretación de {Id} ({Tipo}); se conserva la ficha anterior.",
-                    leida.Identificador, ex.GetType().Name);
+                // InvalidDataException proviene de las validaciones internas con mensajes
+                // controlados, sin copiar la respuesta ni datos de acceso del proveedor.
+                var motivo = ex is InvalidDataException ? ex.Message
+                    : ex is HttpRequestException http ? $"Proveedor HTTP {(int?)http.StatusCode}"
+                    : ex.GetType().Name;
+                logger.LogWarning("Mostaza: no se publicará la interpretación de {Nombre} [{Id}]. Motivo: {Motivo}; se conserva la ficha anterior.",
+                    leida.Nombre, leida.Identificador, motivo);
                 if (ex is HttpRequestException { StatusCode: System.Net.HttpStatusCode.TooManyRequests }
                     || ex is InvalidOperationException) cuotaAgotada = true;
             }
