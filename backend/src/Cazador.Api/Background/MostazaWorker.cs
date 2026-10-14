@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Cazador.Api.Modules.Obtencion.Ia;
+using Cazador.Api.Modules.Obtencion.Materiales;
 using Cazador.Api.Infrastructure.Persistence;
 using Cazador.Api.Modules.Catalogo.Entities;
 using Cazador.Api.Modules.Obtencion.Readers;
@@ -47,7 +48,13 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
             throw new InvalidDataException("Mostaza: respuesta no HTML.");
         var html = await response.Content.ReadAsStringAsync(ct);
         if (html.Length > 2_000_000) throw new InvalidDataException("Mostaza: respuesta demasiado grande.");
-        var leidas = MostazaReader.Leer(html);
+        IReadOnlyList<OfertaLeida> leidas;
+        try { leidas = MostazaReader.Leer(html); }
+        catch (InvalidDataException)
+        {
+            logger.LogWarning("Mostaza: no se pudo interpretar el texto bancario; se conserva y se revisan los materiales por separado.");
+            leidas = [];
+        }
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var fuente = await db.Fuentes.SingleOrDefaultAsync(x => x.Marca == "Mostaza" && x.Url == MostazaReader.Url, ct);
@@ -95,6 +102,13 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
                     || ex is InvalidOperationException) cuotaAgotada = true;
             }
         }
+        IReadOnlyList<MaterialInterpretado> materiales = [];
+        if (config.GetValue<bool>("Obtencion:Mostaza:UseMateriales"))
+        {
+            try { materiales = await scope.ServiceProvider.GetRequiredService<MostazaMaterialReader>().LeerAsync(html, ct); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception ex) { logger.LogWarning("Mostaza: falló lectura de materiales ({Tipo}); se mantienen las fichas anteriores.", ex.GetType().Name); }
+        }
         // Ninguna transacción de escritura queda abierta durante llamadas a IA.
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var ahora = DateTime.UtcNow;
@@ -127,6 +141,28 @@ public sealed class MostazaWorker(IServiceScopeFactory scopes, IHttpClientFactor
             foreach (var beneficio in leida.Beneficios)
                 oferta.Beneficios.Add(new Beneficio { Tipo = TipoBeneficio.PromocionBancaria,
                     Descripcion = beneficio.Descripcion, Valor = beneficio.Porcentaje });
+        }
+        foreach (var material in materiales)
+        {
+            var p = material.Lectura.Publicacion;
+            var oferta = actuales.SingleOrDefault(x => x.IdentificadorPublicacion == material.Material.Id);
+            if (oferta is null)
+            {
+                oferta = new Oferta { Fuente = fuente, IdentificadorPublicacion = material.Material.Id };
+                db.Ofertas.Add(oferta);
+            }
+            oferta.Nombre = p.Nombre!; oferta.Resumen = p.Resumen!;
+            // Todo el texto leído sigue visible para no perder condiciones en el resumen.
+            oferta.Condiciones = material.Lectura.TextoOriginal;
+            oferta.TextoOriginal = material.Material.Url.AbsoluteUri + "\n" + material.Lectura.TextoOriginal;
+            oferta.VigenteDesde = p.Desde is null ? null : DateOnly.ParseExact(p.Desde, "yyyy-MM-dd");
+            oferta.VigenteHasta = p.Hasta is null ? null : DateOnly.ParseExact(p.Hasta, "yyyy-MM-dd");
+            oferta.RequiereApp = p.RequiereApp; oferta.RequiereSesion = p.RequiereSesion;
+            oferta.UrlOriginal = MostazaReader.Url; oferta.EsPaginaGeneral = true;
+            oferta.UltimaLecturaUtc = ahora;
+            oferta.EnlaceDisponible = true; oferta.UltimaComprobacionUtc = ahora;
+            db.Beneficios.RemoveRange(oferta.Beneficios); oferta.Beneficios.Clear();
+            foreach (var b in p.Beneficios) oferta.Beneficios.Add(new Beneficio { Tipo = Enum.Parse<TipoBeneficio>(b.Tipo), Descripcion = b.Descripcion, Valor = b.Valor, Moneda = b.Moneda });
         }
         // Ausencia en la respuesta no equivale a vencimiento. Las fechas conocidas se filtran en el catálogo.
         await db.SaveChangesAsync(ct);

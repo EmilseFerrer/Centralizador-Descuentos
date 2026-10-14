@@ -105,13 +105,11 @@ dotnet run --project .\tests\Ocr.Checks -- --archivo "C:\ruta\promocion.png"
 ```
 
 Esto es una herramienta de comprobación para desarrollo, no una carga manual de ofertas.
-**Estado:** adaptador preparado y pruebas simuladas; aún no conectado a las ejecuciones
-periódicas. La fuente seleccionada de Mostaza publica las promociones bancarias en HTML,
-sin imágenes de promociones o PDF en el contenido descargado; Burger King se obtiene de
-texto estructurado. No se procesan logos ni imágenes decorativas. Falta seleccionar un
-recurso promocional público accesible, integrar su descarga automática con límites y
-clasificar el texto antes de persistirlo. McDonald's continúa pendiente: no se automatiza
-el acceso con una cuenta de usuario. OCR no elude bloqueos HTTP de la fuente.
+**Estado:** adaptador validado con una imagen real y conectado al proceso periódico de
+Mostaza mediante `MostazaMaterialReader`. Detecta recursos promocionales PNG/JPEG/PDF del
+bloque seleccionado. El recorrido completo con descarga y persistencia se prueba con
+fuentes simuladas; falta validar un recurso promocional real de ese bloque. La imagen
+antigua de prueba no se incorpora al catálogo. OCR no elude bloqueos HTTP de una fuente.
 
 ## Clasificar y resumir con IA
 
@@ -146,10 +144,10 @@ Consume una solicitud de OCR y una de Gemini, imprime la propuesta y no persiste
 En la muestra antigua se espera el beneficio principal de 30%, no el 15% de otros cupones;
 no inferir que requiere sesión por el encabezado de la página y no inventar vigencia.
 Este archivo no es una fuente de ofertas vigentes ni amplía las fuentes del catálogo.
-**Pendiente:** validar la respuesta real con la clave del desarrollador y conectar estos
-adaptadores al proceso periódico con recursos promocionales públicos accesibles, identidad
-estable y control de relecturas. La IA ya está integrada en la actualización de Mostaza; Burger King conserva su lector
-estructurado. Una prueba exitosa del adaptador no demuestra aún el MVP completo.
+**Estado:** OCR e IA ya se validaron con claves reales en una imagen de prueba, y la IA
+actualiza las cinco publicaciones bancarias de Mostaza en MySQL. La lectura de materiales
+se integró al proceso periódico. Sigue pendiente validar un recurso multimedia real de
+la fuente seleccionada y cubrir McDonald's. Burger King conserva su lector estructurado.
 
 Las evidencias toleran exclusivamente diferencias de espacios y saltos de línea de OCR.
 Las palabras, cifras y puntuación deben coincidir. El error identifica el campo rechazado.
@@ -180,10 +178,9 @@ Esta caché no es persistente y un cambio de condiciones requiere una llamada nu
 El log `Mostaza: ... publicaciones actualizadas (IA: True)` permite verificar la ejecución.
 Si se desactiva `UseIa`, se vuelve al extracto literal del lector para desarrollo.
 
-OCR continúa preparado y probado, pero aún no participa en la actualización periódica:
-la fuente seleccionada de Mostaza es texto HTML. La muestra antigua de OCR no se incorpora
-al catálogo. Falta un recurso promocional público accesible dentro de las fuentes
-seleccionadas para integrar su descarga y extracción automática con identidad propia.
+OCR ahora participa en la detección periódica de materiales del bloque seleccionado de
+Mostaza. Cuando no hay recursos admitidos, registra cero materiales y sigue actualizando
+las publicaciones de texto. La muestra antigua de OCR no se incorpora al catálogo.
 
 En el contexto bancario, la IA resume y clasifica las variantes de una publicación; no
 redacta un segundo campo de condiciones. Ese campo mantiene íntegro el texto de origen.
@@ -225,3 +222,38 @@ dotnet run --project .\tests\Conexion.Checks -- --simulada
 Este registro sirve para identificar los fallos intermitentes observados. No modifica
 credenciales, límites del pool, transacciones ni configura reintentos de escrituras.
 La causa de los fallos reales sigue pendiente de comprobar con el entorno del desarrollador.
+
+## Materiales promocionales automáticos
+
+`Obtencion:Mostaza:UseMateriales=true` revisa imágenes y enlaces a PDF del mismo bloque
+seleccionado al iniciar y cada seis horas. No recorre todo el sitio. Las imágenes deben
+estar identificadas como promocionales en su texto alternativo/título; los enlaces a
+PDF deben mencionar promociones, beneficios o condiciones. Logos y recursos sin una
+señal promocional no se procesan. Se admiten hasta cinco recursos por lectura.
+
+Solo descarga HTTPS del dominio exacto de Mostaza y verifica cada redirección; admite
+PNG, JPEG y PDF de hasta 1 MB. PDF conserva el límite de tres páginas del proveedor.
+Aplica OCR y clasificación IA antes de persistir. Conserva texto leído y URL del recurso;
+la ficha abre la página seleccionada y avisa que es un destino general.
+Identifica cada publicación multimedia por la URL del recurso, normalizando fragmentos.
+Si la URL cambia, puede generar una publicación distinta; no compara ofertas ni presume
+que dos recursos diferentes sean la misma publicación.
+
+El contenido sin cambios reutiliza una caché acotada a 100 entradas durante la ejecución;
+al reiniciar puede consumir nuevamente OCR/IA. Si falla descarga, OCR o interpretación,
+se mantiene la ficha multimedia anterior. Las ofertas de texto pueden seguir actualizándose.
+Si el bloque textual falla pero el bloque seleccionado aún existe, los materiales se
+procesan por separado. No se marca como vencida una publicación por no estar en la respuesta.
+
+Pruebas sin claves ni solicitudes reales:
+
+```powershell
+dotnet run --project .	ests\Materiales.Checks
+dotnet run --project .	ests\MostazaIa.Checks
+```
+
+Validan selección limitada, rechazo de destinos y archivos inválidos, PNG/PDF → OCR → IA,
+caché y persistencia sin duplicados. Usan respuestas simuladas; MySQL continúa siendo la
+base del sistema. La prueba de persistencia usa SQLite solo en el proyecto de pruebas.
+La ausencia de un recurso promocional real en la fuente actual impide afirmar todavía
+que ese recorrido fue validado con promociones reales. McDonald's sigue pendiente.

@@ -44,6 +44,12 @@ builder.Services.AddHttpClient<Cazador.Api.Modules.Obtencion.Ia.GeminiOfferReade
 {
     client.Timeout = TimeSpan.FromSeconds(90);
 }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddSingleton<Cazador.Api.Modules.Obtencion.Materiales.MostazaMaterialCache>();
+builder.Services.AddHttpClient<Cazador.Api.Modules.Obtencion.Materiales.MostazaMaterialReader>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralizadorDescuentosAcademico/0.1");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors("Frontend");
