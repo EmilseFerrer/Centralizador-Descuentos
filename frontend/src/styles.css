@@ -1,97 +1,101 @@
-:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color: #21372d; background: #f9f7f0; font-synthesis: none; }
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color: #f3f3f5; background: #090a0c; font-synthesis: none; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin: 0; }
 main { max-width: 1220px; margin: auto; padding: 0 36px; }
 button, select { font: inherit; }
-button { cursor: pointer; border: 1px solid transparent; border-radius: 12px; padding: 13px 20px; background: #214f39; color: white; font-weight: 650; transition: background .15s; }
-button:hover:not(:disabled) { background: #143b27; }
+button { cursor: pointer; border: 1px solid transparent; border-radius: 12px; padding: 13px 20px; background: #f5a366; color: #14100c; font-weight: 650; transition: background .15s; }
+button:hover:not(:disabled) { background: #ffc08f; }
 button:disabled { opacity: .6; cursor: wait; }
 button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #ca631b; outline-offset: 4px; }
-a { color: #214f39; text-underline-offset: 3px; }
-.site-header { display: flex; align-items: center; justify-content: space-between; min-height: 100px; gap: 24px; border-bottom: 1px solid #e5e6dc; }
+a { color: #f5a366; text-underline-offset: 3px; }
+.site-header { display: flex; align-items: center; justify-content: space-between; min-height: 82px; gap: 24px; border-bottom: 1px solid #2b2e34; }
 .identidad { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; line-height: 1.15; }
-.logo { display: grid; place-items: center; height: 44px; width: 44px; border-radius: 13px 13px 13px 3px; background: #214f39; color: #f7ecca; font-size: 1.7rem; }
+.logo { display: grid; place-items: center; height: 44px; width: 44px; border-radius: 13px 13px 13px 3px; background: #f5a366; color: #101114; font-size: 1.7rem; }
 .logo-subtitulo { display: block; font-size: .85rem; font-weight: 500; margin-top: 3px; }
-.header-nota { font-size: .85rem; color: #6b756b; }
-.hero { position: relative; padding: 56px 0 48px; border-bottom: 1px solid #e5e6dc; }
-.eyebrow { font-size: .68rem; font-weight: 750; letter-spacing: .14em; color: #637668; margin: 0 0 14px; }
-.hero h1 { font-size: clamp(2.6rem, 6vw, 4.8rem); font-weight: 800; letter-spacing: -.055em; line-height: 1.02; margin: 0; }
-.hero h1 span { color: #cf602c; }
-.hero-descripcion { font-size: 1.05rem; line-height: 1.65; color: #667367; margin: 24px 0; }
+.header-nota { font-size: .85rem; color: #a6a9b2; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: center; gap: 40px; position: relative; padding: 32px 0; border-bottom: 1px solid #2b2e34; }
+.eyebrow { font-size: .68rem; font-weight: 750; letter-spacing: .14em; color: #a6a9b2; margin: 0 0 14px; }
+.hero h1 { font-size: clamp(2.3rem, 4.3vw, 3.8rem); font-weight: 800; letter-spacing: -.055em; line-height: 1.02; margin: 0; }
+.hero h1 span { color: #f5a366; }
+.hero-descripcion { font-size: 1.05rem; line-height: 1.65; color: #b0b3bc; margin: 18px 0 0; }
 .marcas { display: flex; gap: 9px; flex-wrap: wrap; }
-.marcas span { border: 1px solid #dcdfd2; border-radius: 100px; padding: 8px 14px; font-size: .77rem; font-weight: 650; background: #ffffff70; }
+.marcas span { border: 1px solid #34373e; border-radius: 100px; padding: 8px 14px; font-size: .77rem; font-weight: 650; background: #17191d; }
 .listado-cabecera { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin: 36px 0 24px; }
 .listado-cabecera .eyebrow { margin-bottom: 8px; }
 .listado-cabecera h2 { margin: 0; letter-spacing: -.035em; font-size: 1.75rem; }
-.contador { color: #637060; font-size: .8rem; padding-bottom: 4px; white-space: nowrap; }
+.contador { color: #adb0b9; font-size: .8rem; padding-bottom: 4px; white-space: nowrap; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.oferta-card { background: #fff; border: 1px solid #e7e8dd; border-radius: 19px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 16px #21372d05; }
+.oferta-card { background: #17191d; border: 1px solid #2b2e34; border-radius: 19px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 16px #f3f3f505; }
 .card-visual { position: relative; }
-.oferta-imagen { margin: 0; position: relative; overflow: hidden; background: #f3f0e4; }
+.oferta-imagen { margin: 0; position: relative; overflow: hidden; background: #15171b; }
 .oferta-imagen img, .oferta-imagen svg { display: block; width: 100%; height: 235px; object-fit: contain; }
-.oferta-imagen img { background: #fffdf6; }
-.oferta-imagen figcaption { position: absolute; left: 12px; bottom: 10px; max-width: calc(100% - 24px); padding: 5px 8px; border-radius: 6px; color: #626d62; background: #fffffff2; font-size: .61rem; }
-.sin-imagen { min-height: 235px; display: grid; place-items: center; padding: 32px; text-align: center; color: #758073; font-size: .8rem; }
-.beneficio-badge { position: absolute; top: 14px; left: 14px; background: #fbd4af; color: #713c17; padding: 8px 12px; border-radius: 8px; font-size: .83rem; font-weight: 800; box-shadow: 0 2px 8px #56311808; }
+.oferta-imagen img { background: #17191d; }
+.oferta-imagen figcaption { position: absolute; left: 12px; bottom: 10px; max-width: calc(100% - 24px); padding: 5px 8px; border-radius: 6px; color: #d0d2d8; background: #131519ed; font-size: .61rem; }
+.sin-imagen { min-height: 235px; display: grid; place-items: center; padding: 32px; text-align: center; color: #a6a9b2; font-size: .8rem; }
+.beneficio-badge { position: absolute; top: 14px; left: 14px; background: #f5a366; color: #16100b; padding: 8px 12px; border-radius: 8px; font-size: .83rem; font-weight: 800; box-shadow: 0 2px 8px #56311808; }
 .card-contenido { padding: 22px; display: flex; flex-direction: column; flex: 1; }
 .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.marca { color: #426b52; font-size: .72rem; font-weight: 800; letter-spacing: .04em; margin: 0; }
-.tipo-oferta { color: #64715f; font-size: .64rem; }
+.marca { color: #f5a366; font-size: .72rem; font-weight: 800; letter-spacing: .04em; margin: 0; }
+.tipo-oferta { color: #adb0b9; font-size: .64rem; }
 .card-contenido h3 { font-size: 1.16rem; letter-spacing: -.025em; line-height: 1.4; margin: 12px 0 0; overflow-wrap: anywhere; }
-.card-resumen { color: #637060; font-size: .85rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 12px 0 24px; }
+.card-resumen { color: #adb0b9; font-size: .85rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 12px 0 24px; }
 .card-boton { margin-top: auto; width: 100%; display: flex; align-items: center; justify-content: space-between; font-size: .85rem; }
 .card-boton span { font-size: 1.2rem; }
-.estado { padding: 48px 24px; margin: 24px 0; text-align: center; background: #fff; border: 1px solid #e5e6dc; border-radius: 16px; color: #637668; }
-.estado h2, .estado h3 { color: #21372d; }
-.error, [role="alert"] { color: #9a3434; }
-.cargando { display: inline-block; width: 22px; height: 22px; border: 2px solid #e2e8dc; border-top-color: #214f39; border-radius: 50%; animation: girar 1s linear infinite; }
+.estado { padding: 48px 24px; margin: 18px 0 0; text-align: center; background: #17191d; border: 1px solid #2b2e34; border-radius: 16px; color: #a6a9b2; }
+.estado h2, .estado h3 { color: #f3f3f5; }
+.error, [role="alert"] { color: #ffaaaa; }
+.cargando { display: inline-block; width: 22px; height: 22px; border: 2px solid #34373e; border-top-color: #f5a366; border-radius: 50%; animation: girar 1s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
-.volver { margin: 28px 0; background: transparent; border-color: #d9dfd3; color: #214f39; font-size: .85rem; }
-.volver:hover:not(:disabled) { background: #e9edde; }
-.oferta-detalle { background: white; border: 1px solid #e7e8dd; border-radius: 20px; padding: 32px; overflow-wrap: anywhere; }
+.volver { margin: 28px 0; background: transparent; border-color: #34373e; color: #f5a366; font-size: .85rem; }
+.volver:hover:not(:disabled) { background: #24272d; }
+.oferta-detalle { background: #17191d; border: 1px solid #2b2e34; border-radius: 20px; padding: 32px; overflow-wrap: anywhere; }
 .detalle-top { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
 .detalle-top .oferta-imagen { border-radius: 14px; }
 .detalle-top .oferta-imagen img, .detalle-top .oferta-imagen svg { height: 300px; }
 .detalle-intro h1 { font-size: clamp(1.6rem, 3vw, 2.3rem); letter-spacing: -.04em; line-height: 1.15; margin: 16px 0; }
-.detalle-resumen { color: #667367; line-height: 1.7; }
-.oferta-detalle section { margin-top: 30px; padding-top: 25px; border-top: 1px solid #e8ebdf; }
+.detalle-resumen { color: #b0b3bc; line-height: 1.7; }
+.oferta-detalle section { margin-top: 30px; padding-top: 25px; border-top: 1px solid #2b2e34; }
 .oferta-detalle section h2 { font-size: 1.3rem; letter-spacing: -.025em; margin: 0 0 16px; }
 .oferta-detalle section h3 { font-size: 1.05rem; }
 .oferta-detalle section p, .oferta-detalle li { font-size: .9rem; line-height: 1.75; }
-.beneficios-detalle { padding: 24px !important; border: 0 !important; border-radius: 12px; background: #f3f6e9; }
+.beneficios-detalle { padding: 24px !important; border: 0 !important; border-radius: 12px; background: #22252b; }
 .beneficios-detalle ul { margin-bottom: 0; padding-left: 20px; }
-.condiciones { white-space: pre-line; color: #596856; }
-.datos-oferta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 20px; background: #f9faf5; border-radius: 12px; }
-.datos-oferta dt { font-size: .7rem; color: #637060; margin-bottom: 7px; }
+.condiciones { white-space: pre-line; color: #c0c3cc; }
+.datos-oferta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 20px; background: #101216; border-radius: 12px; }
+.datos-oferta dt { font-size: .7rem; color: #adb0b9; margin-bottom: 7px; }
 .datos-oferta dd { margin: 0; font-size: .83rem; }
 .dato-fuente { grid-column: 1 / -1; }
 .acciones, form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.secundario { background: #fff; color: #214f39; border-color: #cbd6c5; }
-.secundario:hover:not(:disabled) { background: #f0f4e9; }
-select { padding: 12px; max-width: 100%; border: 1px solid #cbd6c5; border-radius: 8px; background: white; color: #21372d; }
+.secundario { background: #17191d; color: #f5a366; border-color: #3b3f48; }
+.secundario:hover:not(:disabled) { background: #24272d; }
+select { padding: 12px; max-width: 100%; border: 1px solid #3b3f48; border-radius: 8px; background: #17191d; color: #f3f3f5; }
 label { font-size: .85rem; }
-.texto-secundario { color: #637060; }
-[role="status"] { color: #426b52; }
-.site-footer { padding: 34px 0 28px; margin-top: 40px; border-top: 1px solid #e5e6dc; display: flex; justify-content: space-between; gap: 24px; align-items: center; font-size: .7rem; color: #637060; }
+.texto-secundario { color: #adb0b9; }
+[role="status"] { color: #f5a366; }
+.site-footer { padding: 34px 0 28px; margin-top: 40px; border-top: 1px solid #2b2e34; display: flex; justify-content: space-between; gap: 24px; align-items: center; font-size: .7rem; color: #adb0b9; }
 .site-footer span { font-weight: 750; }
 .site-footer p { margin: 0; max-width: 420px; line-height: 1.7; }
-@media (max-width: 950px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } main { padding: 0 24px; } .detalle-top { gap: 24px; } }
-@media (max-width: 600px) { main { padding: 0 18px; } .site-header { min-height: 82px; } .header-nota { display: none; } .hero { padding: 35px 0; } .hero-descripcion { font-size: .95rem; } .solo-escritorio { display: none; } .grid { grid-template-columns: 1fr; gap: 20px; } .listado-cabecera { align-items: start; } .listado-cabecera h2 { font-size: 1.45rem; } .contador { padding-top: 8px; font-size: .72rem; } .oferta-imagen img, .oferta-imagen svg { height: 245px; } .detalle-top { grid-template-columns: 1fr; gap: 24px; } .oferta-detalle { padding: 20px; border-radius: 15px; } .detalle-top .oferta-imagen img, .detalle-top .oferta-imagen svg { height: 245px; } .datos-oferta { grid-template-columns: 1fr 1fr; padding: 16px; } .datos-oferta > div:nth-child(3) { grid-column: 1 / -1; } .site-footer { flex-direction: column; align-items: start; gap: 12px; } }
+@media (max-width: 950px) { .hero { gap: 24px; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } main { padding: 0 24px; } .detalle-top { gap: 24px; } }
+@media (max-width: 600px) { main { padding: 0 18px; } .site-header { min-height: 82px; } .header-nota { display: none; } .hero { grid-template-columns: 1fr; gap: 20px; padding: 22px 0; } .hero h1 { font-size: 2.2rem; } .hero-descripcion { margin: 12px 0 0; } .hero .eyebrow { margin-bottom: 10px; } .hero-descripcion { font-size: .95rem; } .solo-escritorio { display: none; } .grid { grid-template-columns: 1fr; gap: 20px; } .listado-cabecera { align-items: start; } .listado-cabecera h2 { font-size: 1.45rem; } .contador { padding-top: 8px; font-size: .72rem; } .oferta-imagen img, .oferta-imagen svg { height: 245px; } .detalle-top { grid-template-columns: 1fr; gap: 24px; } .oferta-detalle { padding: 20px; border-radius: 15px; } .detalle-top .oferta-imagen img, .detalle-top .oferta-imagen svg { height: 245px; } .datos-oferta { grid-template-columns: 1fr 1fr; padding: 16px; } .datos-oferta > div:nth-child(3) { grid-column: 1 / -1; } .site-footer { flex-direction: column; align-items: start; gap: 12px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
-.filtros { margin-top: 30px; padding: 25px; border: 1px solid #e3e7da; border-radius: 16px; background: #ffffffb0; }
-.filtro-marcas { padding: 0; margin: 0 0 22px; border: 0; min-width: 0; }
+.filtros { margin-top: 0; min-width: 0; padding: 25px; border: 1px solid #30333b; border-radius: 16px; background: #17191d; }
+.filtro-marcas { padding: 0; margin: 0 0 16px; border: 0; min-width: 0; }
 .filtro-marcas legend { font-size: .85rem; font-weight: 750; margin-bottom: 12px; }
 .marca-opciones { display: flex; flex-wrap: wrap; gap: 9px; }
-.filtro-marca { background: #fff; border-color: #dce2d5; color: #42634c; padding: 10px 17px; border-radius: 100px; font-size: .8rem; }
-.filtro-marca:hover:not(:disabled) { background: #edf2e5; }
-.filtro-marca.activo { background: #214f39; border-color: #214f39; color: #fff; }
-.filtros-campos { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
-.filtros-campos label { display: block; margin-bottom: 9px; color: #596e58; font-size: .75rem; }
-.campo-busqueda { flex: 1 1 270px; }
-.campo-tipo { flex: 0 1 250px; }
-.filtros input { width: 100%; border: 1px solid #cbd6c5; background: #fff; color: #21372d; border-radius: 9px; padding: 13px 14px; font: inherit; font-size: .85rem; }
+.filtro-marca { background: #17191d; border-color: #34373e; color: #d9dbe1; padding: 10px 17px; border-radius: 100px; font-size: .8rem; }
+.filtro-marca:hover:not(:disabled) { background: #292c33; }
+.filtro-marca.activo { background: #f5a366; border-color: #f5a366; color: #14100c; }
+.filtros-campos { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.filtros-campos label { display: block; margin-bottom: 9px; color: #c0c3cc; font-size: .75rem; }
+.campo-busqueda { flex: 1 1 100%; }
+.campo-tipo { flex: 1 1 240px; }
+.filtros input { width: 100%; border: 1px solid #3b3f48; background: #17191d; color: #f3f3f5; border-radius: 9px; padding: 13px 14px; font: inherit; font-size: .85rem; }
 .filtros input:focus-visible { outline: 3px solid #ca631b; outline-offset: 3px; }
 .filtros select { width: 100%; min-height: 45px; font-size: .82rem; }
 .limpiar-filtros { min-height: 45px; font-size: .8rem; }
-@media (max-width: 600px) { .filtros { padding: 20px; } .campo-busqueda, .campo-tipo { flex-basis: 100%; } .limpiar-filtros { width: 100%; } }
+@media (max-width: 600px) { .filtros { padding: 18px; } .campo-busqueda, .campo-tipo { flex-basis: 100%; } .limpiar-filtros { width: 100%; } }
+
+input::placeholder { color: #969aa5; opacity: 1; }
+.hero-texto { min-width: 0; }
+@media (min-width: 601px) and (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 20px; } .hero h1 { font-size: 2.5rem; } }

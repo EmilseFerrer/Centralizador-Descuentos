@@ -43,16 +43,19 @@ export default function App() {
       <span className="header-nota">Tu próxima pausa, por menos.</span>
     </header>
     {id === null ? <section className="hero" aria-labelledby="hero-titulo">
-      <p className="eyebrow">PROMOCIONES EN UN SOLO LUGAR</p>
-      <h1 id="hero-titulo">Encontrá tu<br /><span>próxima oferta.</span></h1>
-      <p className="hero-descripcion">El beneficio, las condiciones y la publicación original.<br className="solo-escritorio" /> Todo a mano para elegir tu próxima pausa.</p>
-      <div className="marcas" aria-label="Marcas del proyecto"><span>McDonald’s</span><span>Burger King</span><span>Mostaza</span></div>
-    </section> : <button className="volver" onClick={() => setId(null)}><span aria-hidden="true">←</span> Volver a las ofertas</button>}
-    {error ? <div className="estado error" role="alert"><h2>No pudimos cargar las ofertas</h2><p>{error}</p><p>Verificá que el backend esté funcionando.</p></div> : data === null ? <div className="estado" role="status"><span className="cargando" aria-hidden="true" /><p>Buscando las publicaciones…</p></div> : id === null ? <>
+      <div className="hero-texto">
+        <p className="eyebrow">PROMOCIONES EN UN SOLO LUGAR</p>
+        <h1 id="hero-titulo">Encontrá tu<br /><span>próxima oferta.</span></h1>
+        <p className="hero-descripcion">Elegí una marca y encontrá el beneficio para tu próxima pausa.</p>
+      </div>
+      {data !== null && !error && <>
       <section className="filtros" aria-label="Buscar y filtrar ofertas">
         <fieldset className="filtro-marcas"><legend>Elegí una marca</legend><div className="marca-opciones"><button className={marca === 'todas' ? 'filtro-marca activo' : 'filtro-marca'} aria-pressed={marca === 'todas'} onClick={() => setMarca('todas')}>Todas</button>{marcas.map(m => <button key={m} className={marca === m ? 'filtro-marca activo' : 'filtro-marca'} aria-pressed={marca === m} onClick={() => setMarca(m)}>{m}</button>)}</div></fieldset>
         <div className="filtros-campos"><div className="campo-busqueda"><label htmlFor="buscar-ofertas">¿Qué estás buscando?</label><input id="buscar-ofertas" type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Producto, banco o condición…" maxLength={200} /></div><div className="campo-tipo"><label htmlFor="tipo-beneficio">Tipo de beneficio</label><select id="tipo-beneficio" value={tipo} onChange={e => setTipo(e.target.value)}><option value="todos">Todos los beneficios</option><option value="productos">Promociones de productos</option><option value="bancarias">Beneficios bancarios</option></select></div>{(marca || busqueda || tipo !== 'todos') && <button className="limpiar-filtros secundario" onClick={limpiar}>Limpiar filtros</button>}</div>
       </section>
+      </>}
+    </section> : <button className="volver" onClick={() => setId(null)}><span aria-hidden="true">←</span> Volver a las ofertas</button>}
+    {error ? <div className="estado error" role="alert"><h2>No pudimos cargar las ofertas</h2><p>{error}</p><p>Verificá que el backend esté funcionando.</p></div> : data === null ? <div className="estado" role="status"><span className="cargando" aria-hidden="true" /><p>Buscando las publicaciones…</p></div> : id === null ? <>
       <div className="listado-cabecera"><div><p className="eyebrow">PARA TU PRÓXIMA PAUSA</p><h2>Ofertas publicadas</h2></div><span className="contador" aria-live="polite" aria-atomic="true">{marca ? `${visibles.length} de ${data.length} publicaciones` : `${data.length} disponibles`}</span></div>
       {!marca && data.length > 0 ? <div className="estado"><h3>Elegí por dónde empezar</h3><p>Seleccioná una marca para ver sus ofertas, o elegí Todas para explorar el catálogo.</p></div> : data.length === 0 ? <div className="estado"><h3>Todavía no hay ofertas disponibles</h3><p>Las publicaciones aparecerán cuando se complete su lectura.</p></div> :
       visibles.length === 0 ? <div className="estado" role="status"><h3>No encontramos ofertas con esos filtros</h3><p>Probá otra palabra o cambiá el tipo de beneficio.</p><button className="secundario" onClick={limpiar}>Ver todas las ofertas</button></div> : <section className="grid" aria-label="Ofertas">{visibles.map(o => <article className="oferta-card" key={o.id}>
