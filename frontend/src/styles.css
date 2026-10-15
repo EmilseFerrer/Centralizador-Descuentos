@@ -35,3 +35,5 @@ button:hover:not(:disabled) { background: #173c2b; }
 .oferta-detalle .oferta-imagen { border-radius: 10px; margin-bottom: 24px; }
 .oferta-detalle .oferta-imagen img, .oferta-detalle .oferta-imagen svg { height: 300px; }
 @media (max-width: 500px) { main { padding: 16px; } .oferta-detalle .oferta-imagen img, .oferta-detalle .oferta-imagen svg { height: 220px; } }
+
+.sin-imagen { min-height: 205px; display: grid; place-items: center; padding: 24px; background: #f1eee6; color: #697268; text-align: center; font-size: .9rem; }

@@ -266,8 +266,8 @@ público de la promoción; la URL se conserva en `TextoOriginal` y se extrae al 
 No hay migración nueva. Las fichas guardadas antes de este cambio mostrarán una ilustración
 hasta que el proceso periódico vuelva a leer Burger King.
 
-El frontend muestra fotografía en listado y detalle, carga diferida y una ilustración
-identificada como tal si no hay imagen o no carga. Las promociones bancarias usan una
+El frontend muestra fotografía en listado y detalle, carga diferida y un aviso si no
+hay imagen o no carga. Solo las promociones bancarias usan ilustraciones identificadas. Las promociones bancarias usan una
 ilustración de tarjeta, sin atribuirles un producto que no está publicado. Un material
 promocional de Mostaza que sea imagen conserva esa imagen; un PDF no se trata como foto.
 Solo se aceptan las URLs del catálogo de imágenes seleccionado de Burger King y del
