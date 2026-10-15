@@ -282,3 +282,30 @@ dotnet run --project .\tests\Imagenes.Checks
 McDonald's continúa pendiente de seleccionar y validar una fuente pública concreta.
 Encontrar beneficios en un programa de socios no implica que todos los usuarios puedan
 utilizarlos ni que las ofertas de la app oficial estén disponibles sin registro.
+
+## Filtros de consulta (ampliación acordada)
+
+El listado incluye `esBancaria`, calculado a partir del beneficio estructurado
+PromocionBancaria, y las condiciones publicadas para búsqueda de texto. No se clasifica
+por palabras del nombre. El frontend permite marca, tipo y búsqueda combinados sin
+nuevos endpoints ni migraciones. Las marcas disponibles salen del catálogo real.
+
+Al entrar se pide elegir marca (o Todas); no se muestran todas las tarjetas de entrada.
+La búsqueda ignora acentos y mayúsculas y busca cada palabra en nombre, resumen, marca
+y condiciones. Esto encuentra menciones publicadas; no confirma que un medio de pago
+mencionado esté habilitado, ya que también puede aparecer en una exclusión. Las condiciones
+completas permanecen visibles en la ficha. Los datos sin clasificación no se incluyen
+en un tipo específico. Al volver del detalle se conservan los filtros.
+
+No se añadieron comparaciones, compras, delivery ni filtros estructurados por banco o día.
+Esos dos filtros siguen pendientes de extracción estructurada de condiciones.
+
+Pruebas:
+
+```powershell
+node .\tests\OfertasFiltros.Checks.mjs
+dotnet run --project .\tests\CatalogoFiltros.Checks
+```
+
+Para probar el cambio local se reinicia el backend y se refresca el frontend; la base
+de datos no necesita actualización de esquema.

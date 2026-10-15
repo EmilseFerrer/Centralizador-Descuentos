@@ -78,3 +78,20 @@ label { font-size: .85rem; }
 @media (max-width: 950px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } main { padding: 0 24px; } .detalle-top { gap: 24px; } }
 @media (max-width: 600px) { main { padding: 0 18px; } .site-header { min-height: 82px; } .header-nota { display: none; } .hero { padding: 35px 0; } .hero-descripcion { font-size: .95rem; } .solo-escritorio { display: none; } .grid { grid-template-columns: 1fr; gap: 20px; } .listado-cabecera { align-items: start; } .listado-cabecera h2 { font-size: 1.45rem; } .contador { padding-top: 8px; font-size: .72rem; } .oferta-imagen img, .oferta-imagen svg { height: 245px; } .detalle-top { grid-template-columns: 1fr; gap: 24px; } .oferta-detalle { padding: 20px; border-radius: 15px; } .detalle-top .oferta-imagen img, .detalle-top .oferta-imagen svg { height: 245px; } .datos-oferta { grid-template-columns: 1fr 1fr; padding: 16px; } .datos-oferta > div:nth-child(3) { grid-column: 1 / -1; } .site-footer { flex-direction: column; align-items: start; gap: 12px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.filtros { margin-top: 30px; padding: 25px; border: 1px solid #e3e7da; border-radius: 16px; background: #ffffffb0; }
+.filtro-marcas { padding: 0; margin: 0 0 22px; border: 0; min-width: 0; }
+.filtro-marcas legend { font-size: .85rem; font-weight: 750; margin-bottom: 12px; }
+.marca-opciones { display: flex; flex-wrap: wrap; gap: 9px; }
+.filtro-marca { background: #fff; border-color: #dce2d5; color: #42634c; padding: 10px 17px; border-radius: 100px; font-size: .8rem; }
+.filtro-marca:hover:not(:disabled) { background: #edf2e5; }
+.filtro-marca.activo { background: #214f39; border-color: #214f39; color: #fff; }
+.filtros-campos { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+.filtros-campos label { display: block; margin-bottom: 9px; color: #596e58; font-size: .75rem; }
+.campo-busqueda { flex: 1 1 270px; }
+.campo-tipo { flex: 0 1 250px; }
+.filtros input { width: 100%; border: 1px solid #cbd6c5; background: #fff; color: #21372d; border-radius: 9px; padding: 13px 14px; font: inherit; font-size: .85rem; }
+.filtros input:focus-visible { outline: 3px solid #ca631b; outline-offset: 3px; }
+.filtros select { width: 100%; min-height: 45px; font-size: .82rem; }
+.limpiar-filtros { min-height: 45px; font-size: .8rem; }
+@media (max-width: 600px) { .filtros { padding: 20px; } .campo-busqueda, .campo-tipo { flex-basis: 100%; } .limpiar-filtros { width: 100%; } }

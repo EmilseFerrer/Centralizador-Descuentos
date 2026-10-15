@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function OfertaImagen({ oferta }) {
   const [fallo, setFallo] = useState(false);
-  const bancaria = /banco|reintegro|santander|macro|provincia/i.test(oferta.nombre);
+  const bancaria = oferta.esBancaria === true || (oferta.esBancaria == null && /banco|reintegro|santander|macro|provincia/i.test(oferta.nombre));
   const imagen = oferta.imagen;
   const original = imagen?.url && !fallo;
   if (!original && !bancaria) {

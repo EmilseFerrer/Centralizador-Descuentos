@@ -1,0 +1,24 @@
+using System.Text.Json;
+using Cazador.Api.Infrastructure.Persistence;
+using Cazador.Api.Modules.Catalogo.Controllers;
+using Cazador.Api.Modules.Catalogo.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using var connection=new SqliteConnection("Data Source=:memory:");connection.Open();
+using var db=new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+db.Database.EnsureCreated();
+var banco=new Oferta{Fuente=new Fuente{Marca="Mostaza",Url="https://www.mostazaweb.com.ar/bases-y-condiciones-promos/"},IdentificadorPublicacion="banco",Nombre="Macro",Resumen="Reintegro",Condiciones="Lunes con Cuenta DNI",Beneficios=new List<Beneficio>{new(){Tipo=TipoBeneficio.PromocionBancaria,Descripcion="30%",Valor=30}}};
+var producto=new Oferta{Fuente=new Fuente{Marca="Burger King",Url="https://burgerking.com.ar/es/rewards/offers"},IdentificadorPublicacion="producto",Nombre="Café del Banco",Resumen="Combo",Condiciones="Locales adheridos",Beneficios=new List<Beneficio>{new(){Tipo=TipoBeneficio.Porcentaje,Descripcion="30%",Valor=30}}};
+db.Ofertas.AddRange(banco,producto);await db.SaveChangesAsync();
+var api=new OfertasController(db);
+var result=(OkObjectResult)await api.Listar(CancellationToken.None);
+using var list=JsonDocument.Parse(JsonSerializer.Serialize(result.Value,new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+var datos=list.RootElement.EnumerateArray().ToArray();
+if(datos.Length!=2||!datos.Single(x=>x.GetProperty("id").GetInt64()==banco.Id).GetProperty("esBancaria").GetBoolean()
+ ||datos.Single(x=>x.GetProperty("id").GetInt64()==producto.Id).GetProperty("esBancaria").GetBoolean())throw new Exception("Clasificar por beneficio, nunca por palabras del nombre");
+if(datos.Single(x=>x.GetProperty("id").GetInt64()==banco.Id).GetProperty("condiciones").GetString()!="Lunes con Cuenta DNI")throw new Exception("Búsqueda necesita condiciones publicadas");
+var detail=(OkObjectResult)await api.Detalle(banco.Id,CancellationToken.None);
+using var parsed=JsonDocument.Parse(JsonSerializer.Serialize(detail.Value,new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+if(!parsed.RootElement.GetProperty("esBancaria").GetBoolean())throw new Exception("Detalle y listado deben clasificar igual");
+Console.WriteLine("OK: proyección del catálogo y detalle con tipo bancario estructurado y condiciones completas.");
