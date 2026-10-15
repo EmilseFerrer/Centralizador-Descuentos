@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import OfertaImagen from './OfertaImagen.jsx';
 import { abrirPublicacion, reportarOferta, confirmarHallazgo } from '../api/participacionApi.js';
 
 function fecha(value) {
@@ -46,7 +47,7 @@ export default function OfertaDetalle({ oferta }) {
     catch (error) { setErrorReporte(error.message); }
     finally { setReportando(false); }
   }
-  return <article>
+  return <article className="oferta-detalle"><OfertaImagen key={oferta.imagen?.url || oferta.id} oferta={oferta} />
     <p>{oferta.marca}</p><h2>{oferta.nombre}</h2><p>{oferta.resumen}</p>
     <h3>Beneficios</h3>{oferta.beneficios?.length ? <ul>{oferta.beneficios.map((b, i) => <li key={i}>{b.descripcion}</li>)}</ul> : <p>No informados.</p>}
     <h3>Condiciones</h3><p className="condiciones">{oferta.condiciones || 'No informadas por la fuente.'}</p>

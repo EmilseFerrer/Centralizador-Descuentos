@@ -15,9 +15,9 @@ public class OfertasController(AppDbContext db) : ControllerBase
         var ofertas = await db.Ofertas.AsNoTracking()
             .Where(x => x.VigenteHasta == null || x.VigenteHasta >= hoy)
             .OrderBy(x => x.Id)
-            .Select(x => new { x.Id, Marca = x.Fuente.Marca, x.Nombre, x.Resumen, x.VigenteHasta })
+            .Select(x => new { x.Id, Marca = x.Fuente.Marca, x.Nombre, x.Resumen, x.VigenteHasta, x.TextoOriginal })
             .ToListAsync(cancellationToken);
-        return Ok(ofertas);
+        return Ok(ofertas.Select(x => new { x.Id, x.Marca, x.Nombre, x.Resumen, x.VigenteHasta, Imagen = OfertaImagen.Leer(x.Marca, x.TextoOriginal) }));
     }
 
     [HttpGet("{id:long}")]
@@ -27,12 +27,17 @@ public class OfertasController(AppDbContext db) : ControllerBase
         var oferta = await db.Ofertas.AsNoTracking()
             .Where(x => x.Id == id && (x.VigenteHasta == null || x.VigenteHasta >= hoy))
             .Select(x => new {
-                x.Id, Marca = x.Fuente.Marca, x.Nombre, x.Resumen, x.Condiciones,
+                x.Id, Marca = x.Fuente.Marca, x.Nombre, x.Resumen, x.Condiciones, x.TextoOriginal,
                 x.VigenteDesde, x.VigenteHasta, x.UltimaLecturaUtc,
                 Fuente = x.Fuente.Url, x.UrlOriginal, x.RequiereApp, x.RequiereSesion,
                 x.EsPaginaGeneral, x.EnlaceDisponible, x.UltimaComprobacionUtc,
                 Beneficios = x.Beneficios.Select(b => new { Tipo = b.Tipo.ToString(), b.Descripcion, b.Valor, b.Moneda })
             }).FirstOrDefaultAsync(cancellationToken);
-        return oferta is null ? NotFound() : Ok(oferta);
+        if (oferta is null) return NotFound();
+        return Ok(new { oferta.Id, oferta.Marca, oferta.Nombre, oferta.Resumen, oferta.Condiciones,
+            oferta.VigenteDesde, oferta.VigenteHasta, oferta.UltimaLecturaUtc,
+            oferta.Fuente, oferta.UrlOriginal, oferta.RequiereApp, oferta.RequiereSesion,
+            oferta.EsPaginaGeneral, oferta.EnlaceDisponible, oferta.UltimaComprobacionUtc, oferta.Beneficios,
+            Imagen = OfertaImagen.Leer(oferta.Marca, oferta.TextoOriginal) });
     }
 }

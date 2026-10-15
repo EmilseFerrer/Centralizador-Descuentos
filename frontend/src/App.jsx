@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import OfertaImagen from './features/ofertas/components/OfertaImagen.jsx';
 import OfertaDetalle from './features/ofertas/components/OfertaDetalle.jsx';
 import { listarOfertas, consultarOferta } from './features/ofertas/api/ofertasApi.js';
 
@@ -19,7 +20,7 @@ export default function App() {
     <header><h1>Ofertas de comida rápida</h1><p>McDonald’s · Burger King · Mostaza</p></header>
     {id !== null && <button onClick={() => setId(null)}>Volver al listado</button>}
     {error ? <p role="alert">{error} Verificá que el backend y MySQL estén disponibles.</p> : data === null ? <p role="status">Cargando ofertas…</p> : id === null ?
-      data.length === 0 ? <p>No hay ofertas disponibles.</p> : <section className="grid" aria-label="Ofertas">{data.map(o => <article key={o.id}><p>{o.marca}</p><h2>{o.nombre}</h2><p>{o.resumen}</p><button onClick={() => setId(o.id)}>Ver detalle</button></article>)}</section> :
+      data.length === 0 ? <p>No hay ofertas disponibles.</p> : <section className="grid" aria-label="Ofertas">{data.map(o => <article className="oferta-card" key={o.id}><OfertaImagen key={o.imagen?.url || o.id} oferta={o} /><div className="card-contenido"><p className="marca">{o.marca}</p><h2>{o.nombre}</h2><p>{o.resumen}</p><button onClick={() => setId(o.id)}>Ver detalle</button></div></article>)}</section> :
       <OfertaDetalle key={data.id} oferta={data} />}
   </main>;
 }

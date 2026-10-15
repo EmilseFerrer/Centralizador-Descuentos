@@ -257,3 +257,28 @@ caché y persistencia sin duplicados. Usan respuestas simuladas; MySQL continúa
 base del sistema. La prueba de persistencia usa SQLite solo en el proyecto de pruebas.
 La ausencia de un recurso promocional real en la fuente actual impide afirmar todavía
 que ese recorrido fue validado con promociones reales. McDonald's sigue pendiente.
+
+## Imágenes de las ofertas
+
+El catálogo devuelve `imagen` (URL y descripción) cuando existe una imagen asociada a
+la publicación. Burger King obtiene su imagen localizada en español del mismo documento
+público de la promoción; la URL se conserva en `TextoOriginal` y se extrae al consultar.
+No hay migración nueva. Las fichas guardadas antes de este cambio mostrarán una ilustración
+hasta que el proceso periódico vuelva a leer Burger King.
+
+El frontend muestra fotografía en listado y detalle, carga diferida y una ilustración
+identificada como tal si no hay imagen o no carga. Las promociones bancarias usan una
+ilustración de tarjeta, sin atribuirles un producto que no está publicado. Un material
+promocional de Mostaza que sea imagen conserva esa imagen; un PDF no se trata como foto.
+Solo se aceptan las URLs del catálogo de imágenes seleccionado de Burger King y del
+dominio de Mostaza. El texto original no se expone en la respuesta del listado.
+
+Validación:
+
+```powershell
+dotnet run --project .\tests\Imagenes.Checks
+```
+
+McDonald's continúa pendiente de seleccionar y validar una fuente pública concreta.
+Encontrar beneficios en un programa de socios no implica que todos los usuarios puedan
+utilizarlos ni que las ofertas de la app oficial estén disponibles sin registro.

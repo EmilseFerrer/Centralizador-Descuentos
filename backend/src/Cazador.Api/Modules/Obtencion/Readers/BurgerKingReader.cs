@@ -14,7 +14,7 @@ public static class BurgerKingReader
     public const string EngineUrl = "https://use2-prod-bk-gateway.rbictg.com/graphql";
     public const string CmsUrl = "https://czqk28jt.apicdn.sanity.io/v2023-08-01/data/query/prod_bk_ar";
     public const string EngineQuery = "query LoyaltyOffers { loyaltyOffers(omitInvalids:true) { id sanityId startDate endDate serviceModes redemptionType errors { code message } } }";
-    public const string CmsQuery = "*[_type == \"systemwideOffer\" && _id in $ids && testOnly != true]{_id,name,description,moreInfo,howToRedeem,mobileOrderOnly,redemptionMethod,shortCode,testOnly}";
+    public const string CmsQuery = "*[_type == \"systemwideOffer\" && _id in $ids && testOnly != true]{_id,name,description,moreInfo,howToRedeem,mobileOrderOnly,redemptionMethod,shortCode,testOnly,\"imagenUrl\":localizedImage.es.app.asset->url,\"imagenDescripcion\":localizedImage.es.imageDescription}";
     public static JsonElement Activas(string json)
     {
         using var doc = JsonDocument.Parse(json);
