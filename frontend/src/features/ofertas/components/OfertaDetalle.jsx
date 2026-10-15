@@ -47,16 +47,16 @@ export default function OfertaDetalle({ oferta }) {
     catch (error) { setErrorReporte(error.message); }
     finally { setReportando(false); }
   }
-  return <article className="oferta-detalle"><OfertaImagen key={oferta.imagen?.url || oferta.id} oferta={oferta} />
-    <p>{oferta.marca}</p><h2>{oferta.nombre}</h2><p>{oferta.resumen}</p>
-    <h3>Beneficios</h3>{oferta.beneficios?.length ? <ul>{oferta.beneficios.map((b, i) => <li key={i}>{b.descripcion}</li>)}</ul> : <p>No informados.</p>}
-    <h3>Condiciones</h3><p className="condiciones">{oferta.condiciones || 'No informadas por la fuente.'}</p>
-    <p>Vigencia desde: {oferta.vigenteDesde || 'No informada'}</p>
-    <p>Vigencia hasta: {oferta.vigenteHasta || 'No informada'}</p>
-    <p>Fuente: {oferta.fuente}</p>
-    <p>Última lectura: {fecha(oferta.ultimaLecturaUtc)}</p>
+  return <article className="oferta-detalle">
+    <div className="detalle-top"><OfertaImagen key={oferta.imagen?.url || oferta.id} oferta={oferta} />
+      <div className="detalle-intro"><p className="marca">{oferta.marca}</p><h1>{oferta.nombre}</h1><p className="detalle-resumen">{oferta.resumen}</p></div>
+    </div>
+    <section className="beneficios-detalle" aria-labelledby="beneficios-titulo"><p className="eyebrow">QUÉ INCLUYE</p><h2 id="beneficios-titulo">Tu beneficio</h2>{oferta.beneficios?.length ? <ul>{oferta.beneficios.map((b, i) => <li key={i}>{b.descripcion}</li>)}</ul> : <p>No informado por la fuente.</p>}</section>
+    <section aria-labelledby="condiciones-titulo"><h2 id="condiciones-titulo">Antes de usar la oferta</h2><p className="condiciones">{oferta.condiciones || 'Condiciones no informadas por la fuente.'}</p>
+      <dl className="datos-oferta"><div><dt>Desde</dt><dd>{oferta.vigenteDesde || 'No informada'}</dd></div><div><dt>Hasta</dt><dd>{oferta.vigenteHasta || 'No informada'}</dd></div><div><dt>Última lectura</dt><dd>{fecha(oferta.ultimaLecturaUtc)}</dd></div><div className="dato-fuente"><dt>Fuente</dt><dd>{oferta.fuente}</dd></div></dl>
+    </section>
     <section aria-label="Publicación original">
-      <h3>Publicación original</h3>
+      <h2>Seguí a la publicación original</h2>
       {oferta.esPaginaGeneral === true && <p>El enlace lleva a una página general. Buscá allí el nombre de esta promoción.</p>}
       {oferta.requiereApp === true && <p>El destino requiere la aplicación de la marca.</p>}
       {oferta.requiereSesion === true && <p>El destino requiere iniciar sesión.</p>}
@@ -69,20 +69,20 @@ export default function OfertaDetalle({ oferta }) {
         <h3>¿Encontraste la oferta en el destino?</h3>
         {respuesta === null ? <div className="acciones">
           <button disabled={confirmando} onClick={() => confirmar(true)}>La encontré</button>
-          <button disabled={confirmando} onClick={() => confirmar(false)}>No la encontré</button>
+          <button className="secundario" disabled={confirmando} onClick={() => confirmar(false)}>No la encontré</button>
         </div> : <p role="status">Respuesta guardada: {respuesta ? 'La encontré' : 'No la encontré'}.</p>}
         {errorConfirmacion && <p role="alert">{errorConfirmacion}</p>}
       </>}
     </section>
-    <section aria-label="Reportar oferta">
-      <h3>Reportar un problema</h3>
+    <section className="reporte-seccion" aria-label="Reportar oferta">
+      <h2>¿Encontraste un dato incorrecto?</h2><p className="texto-secundario">Tu reporte nos ayuda a detectar publicaciones vencidas o información incorrecta.</p>
       <form onSubmit={reportar}>
         <label htmlFor="motivo">Motivo</label>
         <select id="motivo" value={motivo} onChange={e => { setMotivo(e.target.value); setReporte(''); }} disabled={reportando}>
           <option value="vencida">Oferta vencida</option>
           <option value="datos_incorrectos">Datos incorrectos</option>
         </select>
-        <button disabled={reportando}>{reportando ? 'Enviando…' : 'Enviar reporte'}</button>
+        <button className="secundario" disabled={reportando}>{reportando ? 'Enviando…' : 'Enviar reporte'}</button>
       </form>
       {reporte && <p role="status">{reporte}</p>}
       {errorReporte && <p role="alert">{errorReporte}</p>}
